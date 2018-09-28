@@ -9,10 +9,29 @@ import java.util.logging.Logger;
  */
 public class RunMW {
 
+    /**
+     * IP-address to listen on by net-thread (memtier client connections).
+     */
 	static String myIp = null;
+
+    /**
+     * Port to listen on by net-thread (memtier client connections).
+     */
 	static int myPort = 0;
+
+    /**
+     * IP-addresses of memchached-servers.
+     */
 	static List<String> mcAddresses = null;
+
+    /**
+     * Number of worker-threads in the worker thread pool.
+     */
 	static int numThreadsPTP = -1;
+
+    /**
+     * Sharded reads enabled.
+     */
 	static boolean readSharded = false;
 
 	private static final Logger logger = Logger.getLogger(RunMW.class.getName());
