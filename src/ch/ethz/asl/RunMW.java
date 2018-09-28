@@ -1,7 +1,12 @@
 package ch.ethz.asl;
 
 import java.util.*;
+import java.util.logging.Logger;
 
+/**
+ * Entry point of application. Parses the arguments and starts the Middleware.
+ *
+ */
 public class RunMW {
 
 	static String myIp = null;
@@ -10,18 +15,26 @@ public class RunMW {
 	static int numThreadsPTP = -1;
 	static boolean readSharded = false;
 
+	private static final Logger logger = Logger.getLogger(RunMW.class.getName());
+
+
 	public static void main(String[] args) throws Exception {
+
+
+	    logger.info("RunMW invoked");
 
 		// -----------------------------------------------------------------------------
 		// Parse and prepare arguments
 		// -----------------------------------------------------------------------------
 
+        logger.info("parse arguments");
 		parseArguments(args);
 
 		// -----------------------------------------------------------------------------
 		// Start the Middleware
 		// -----------------------------------------------------------------------------
 
+        logger.info("start middleware");
 		new Middleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
 	}
 
