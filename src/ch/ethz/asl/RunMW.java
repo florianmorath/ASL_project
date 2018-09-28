@@ -22,9 +22,7 @@ public class RunMW {
 		// Start the Middleware
 		// -----------------------------------------------------------------------------
 
-		new MyMiddleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
-
-
+		new Middleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
 	}
 
 	private static void parseArguments(String[] args) {
