@@ -1,6 +1,8 @@
 package ch.ethz.asl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 /**
@@ -11,11 +13,25 @@ public class Middleware {
 
     private static final Logger logger = Logger.getLogger(Middleware.class.getName());
 
+    private NetThread   netThread;
+    private ArrayList<WorkerThread> workerThreadPool;
+    private LinkedBlockingQueue<Request> requestQueue;
+
+
     public Middleware(String myIp, int myPort, List<String> mcAddresses, int numThreadsPTP, boolean readSharded) {
+
+        this.requestQueue = new LinkedBlockingQueue<>();
+        this.workerThreadPool = new ArrayList<>();
+
+        startNetThread(myIp, myPort);
+
+        //TODO: create and start worker threads
     }
 
-    public void run() {
-        logger.info("Middleware running");
-
+    private void startNetThread(String myIp, int myPort) {
+        this.netThread = new NetThread(myIp, myPort, this.requestQueue);
+        this.netThread.run();
     }
+
+
 }

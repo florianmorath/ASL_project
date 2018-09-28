@@ -54,7 +54,7 @@ public class RunMW {
 		// -----------------------------------------------------------------------------
 
         logger.info("start middleware");
-		new Middleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded).run();
+		new Middleware(myIp, myPort, mcAddresses, numThreadsPTP, readSharded);
 	}
 
 	private static void parseArguments(String[] args) {
