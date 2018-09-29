@@ -14,8 +14,8 @@ public class Request {
     // contains information about channel over which request was sent
     public SelectionKey key;
 
-    public Request(ByteBuffer buf, SelectionKey key){
-        this.buffer = buf;
+    public Request(ByteBuffer buffer, SelectionKey key){
+        this.buffer = buffer;
         this.key = key;
     }
 

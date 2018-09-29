@@ -18,8 +18,8 @@ public class Middleware {
 
     public Middleware(String myIp, int myPort, List<String> mcAddresses, int numThreadsPTP, boolean readSharded) {
 
-        this.requestQueue = new LinkedBlockingQueue<>();
-        this.workerThreadPool = new ArrayList<>();
+        requestQueue = new LinkedBlockingQueue<>();
+        workerThreadPool = new ArrayList<>();
 
         startNetThread(myIp, myPort);
 
@@ -27,8 +27,8 @@ public class Middleware {
     }
 
     private void startNetThread(String myIp, int myPort) {
-        this.netThread = new NetThread(myIp, myPort, this.requestQueue);
-        this.netThread.start();
+        netThread = new NetThread(myIp, myPort, this.requestQueue);
+        netThread.start();
     }
 
 

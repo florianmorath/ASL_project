@@ -34,12 +34,12 @@ public class NetThread extends Thread {
 
         try {
             // Create Selector
-            this.selector = Selector.open();
+            selector = Selector.open();
 
             // Create and configure ServerSocket
-            this.serverChannel = ServerSocketChannel.open();
-            this.serverChannel.socket().bind(new InetSocketAddress(myIp, myPort));
-            this.serverChannel.configureBlocking(false);
+            serverChannel = ServerSocketChannel.open();
+            serverChannel.socket().bind(new InetSocketAddress(myIp, myPort));
+            serverChannel.configureBlocking(false);
 
             // register the channel for accept events
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
@@ -62,14 +62,14 @@ public class NetThread extends Thread {
         while (true) {
             try {
                 // blocks until at least one channel is ready for I/O operations
-                this.selector.select();
+                selector.select();
             } catch (IOException ex) {
                 logger.warning("Selected keys could not be updated.");
                 ex.printStackTrace();
             }
 
             // Iterate over selected keys of Selector
-            Iterator<SelectionKey> iterator = this.selector.selectedKeys().iterator();
+            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
             while (iterator.hasNext()) {
                 SelectionKey key = iterator.next();
 
@@ -93,10 +93,10 @@ public class NetThread extends Thread {
 
     private void acceptClientConnection() {
         try {
-            SocketChannel channel = this.serverChannel.accept();
+            SocketChannel channel = serverChannel.accept();
             channel.configureBlocking(false);
             // selector listens for read events
-            channel.register(this.selector, SelectionKey.OP_READ);
+            channel.register(selector, SelectionKey.OP_READ);
             logger.info("Client connection accepted and added to the selector.");
         } catch(ClosedChannelException ex){
             logger.warning("Channel closed.");
@@ -134,15 +134,19 @@ public class NetThread extends Thread {
         }
 
         // create and enqueue Request
-        logger.info("request enqueued");
-        //enqueueRequest(buffer, key);
+        enqueueRequest(buffer, key);
     }
 
     private void enqueueRequest(ByteBuffer buffer, SelectionKey key){
         Request req = new Request(buffer, key);
 
-        //TODO: enqueue request
-        logger.info("request enqueued");
+        try{
+            requestQueue.put(req);
+            logger.info("request enqueued");
+        } catch (Exception ex){
+            logger.warning("Could not enqueue request.");
+            ex.printStackTrace();
+        }
 
     }
 
