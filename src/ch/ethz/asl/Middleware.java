@@ -3,7 +3,6 @@ package ch.ethz.asl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Logger;
 
 /**
  * Starts the net-thread responsible for client connections. Starts the worker-threads responsible for server
@@ -11,7 +10,6 @@ import java.util.logging.Logger;
  */
 public class Middleware {
 
-    private static final Logger logger = Logger.getLogger(Middleware.class.getName());
 
     private NetThread   netThread;
     private ArrayList<WorkerThread> workerThreadPool;
