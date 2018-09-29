@@ -17,7 +17,7 @@ import java.io.IOException;
  * queue.
  *
  */
-public class NetThread implements Runnable {
+public class NetThread extends Thread {
 
     private static final Logger logger = Logger.getLogger(Middleware.class.getName());
 
@@ -62,16 +62,17 @@ public class NetThread implements Runnable {
         while (true) {
             try {
                 // blocks until at least one channel is ready for I/O operations
-                selector.select();
+                this.selector.select();
             } catch (IOException ex) {
                 logger.warning("Selected keys could not be updated.");
                 ex.printStackTrace();
             }
 
             // Iterate over selected keys of Selector
-            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+            Iterator<SelectionKey> iterator = this.selector.selectedKeys().iterator();
             while (iterator.hasNext()) {
                 SelectionKey key = iterator.next();
+
                 if (key.isAcceptable()) {
                     logger.info("client requests a connection");
                     acceptClientConnection();
@@ -92,10 +93,10 @@ public class NetThread implements Runnable {
 
     private void acceptClientConnection() {
         try {
-            SocketChannel channel = serverChannel.accept();
+            SocketChannel channel = this.serverChannel.accept();
             channel.configureBlocking(false);
             // selector listens for read events
-            channel.register(selector, SelectionKey.OP_READ);
+            channel.register(this.selector, SelectionKey.OP_READ);
             logger.info("Client connection accepted and added to the selector.");
         } catch(ClosedChannelException ex){
             logger.warning("Channel closed.");
@@ -131,6 +132,18 @@ public class NetThread implements Runnable {
             // Cancel registration of the channel to the selector
             key.cancel();
         }
+
+        // create and enqueue Request
+        logger.info("request enqueued");
+        //enqueueRequest(buffer, key);
+    }
+
+    private void enqueueRequest(ByteBuffer buffer, SelectionKey key){
+        Request req = new Request(buffer, key);
+
+        //TODO: enqueue request
+        logger.info("request enqueued");
+
     }
 
 }

@@ -28,7 +28,7 @@ public class Middleware {
 
     private void startNetThread(String myIp, int myPort) {
         this.netThread = new NetThread(myIp, myPort, this.requestQueue);
-        this.netThread.run();
+        this.netThread.start();
     }
 
 
