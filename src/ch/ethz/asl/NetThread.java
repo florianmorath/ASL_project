@@ -87,7 +87,7 @@ public class NetThread implements Runnable {
                 iterator.remove();
             }
         }
-        
+
     }
 
     private void acceptClientConnection() {
@@ -97,6 +97,10 @@ public class NetThread implements Runnable {
             // selector listens for read events
             channel.register(selector, SelectionKey.OP_READ);
             logger.info("Client connection accepted and added to the selector.");
+        } catch(ClosedChannelException ex){
+            logger.warning("Channel closed.");
+            ex.printStackTrace();
+
         } catch (IOException ex) {
             logger.warning("Error while accepting client connection");
             ex.printStackTrace();
@@ -109,11 +113,9 @@ public class NetThread implements Runnable {
         int bytesReadCount = 0;
         try {
             // read data from channel into buffer
-            logger.info("start reading data");
             bytesReadCount = channel.read(buffer);
-            logger.info("end reading data");
         } catch (IOException ex) {
-            logger.info("Error while reading data from client");
+            logger.warning("Error while reading data from client");
             ex.printStackTrace();
         }
 
@@ -123,7 +125,8 @@ public class NetThread implements Runnable {
             try {
                 key.channel().close();
             } catch (IOException ex) {
-                logger.info("Could not close channel after client request connection closure.");
+                logger.warning("Could not close channel after client request connection closure.");
+                ex.printStackTrace();
             }
             // Cancel registration of the channel to the selector
             key.cancel();
