@@ -109,6 +109,7 @@ public class NetThread extends Thread {
     }
 
     private void readFromChannel(SelectionKey key) {
+        //TODO: a request may be encoded in multiple network packets (set requests)
         ByteBuffer buffer = ByteBuffer.allocate(4096);
         SocketChannel channel = (SocketChannel) key.channel();
         int bytesReadCount = 0;
