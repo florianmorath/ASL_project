@@ -10,7 +10,7 @@ import java.util.logging.Logger;
  *
  * Structure of different kind of Memtier requests:
  * Get Request:         "get <key>\r\n"
- * Set Request:         "set <key> 0 <expiry> <value length> <value>\r\n"
+ * Set Request:         "set <key> <flag> <expiry> <value length> <value>\r\n"
  * Multiget Request:    "get <key1> <key2> <key3>\r\n"
  *
  *
@@ -23,7 +23,6 @@ public class Request {
     public enum Type {
         SET,
         GET,
-        MULTIGET,
         INVALID
     }
 
@@ -74,15 +73,15 @@ public class Request {
         // check and assign type
         String requestType = new String(buffer.array(), 0, 3, Charset.forName("UTF-8"));
         if(requestType.equals("get")){
-            //check if get or multiget
             type = Type.GET;
-            logger.info("Get request");
+            logger.info("Detected Get request");
         } else if(requestType.equals("set")){
-            logger.info("Set request");
+            logger.info("Detected Set request");
             type = Type.SET;
         } else {
             logger.warning("Request invalid");
             type = Type.INVALID;
+            logger.warning("Request does not start with set or get command");
         }
 
 
