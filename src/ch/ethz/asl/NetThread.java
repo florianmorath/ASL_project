@@ -116,6 +116,8 @@ public class NetThread extends Thread {
         try {
             // read data from channel into buffer
             bytesReadCount = channel.read(buffer);
+            logger.info("Byte read count: ");
+            logger.info(String.valueOf(bytesReadCount));
         } catch (IOException ex) {
             logger.warning("Error while reading data from client");
             ex.printStackTrace();
@@ -132,6 +134,7 @@ public class NetThread extends Thread {
             }
             // Cancel registration of the channel to the selector
             key.cancel();
+            return;
         }
 
         // create and enqueue Request
