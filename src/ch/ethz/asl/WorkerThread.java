@@ -2,8 +2,11 @@ package ch.ethz.asl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
@@ -63,6 +66,82 @@ public class WorkerThread extends Thread{
     public void run() {
         logger.info("worker-thread" + " " + String.valueOf(this.getId()) + " " + "running.");
 
+        while(true){
 
+            try {
+                // dequeue request (blocks until a request becomes available)
+                Request request = requestQueue.take();
+
+                // handle request (send to memcached servers according to project specification)
+                if (request.type == Request.Type.SET){
+                    handleSetRequest(request);
+                } else if (request.type == Request.Type.GET) {
+                    handleGetRequest(request);
+                } else {
+                    // invalid request -> ignore it
+                }
+
+
+            } catch (Exception e) {
+                logger.warning("Worker-thread failed. Thread id = " + String.valueOf(this.getId()));
+                e.printStackTrace();
+            }
+
+        }
+
+    }
+
+    private void handleSetRequest(Request request) throws IOException {
+        logger.info("handle set request");
+
+        request.buffer.flip();
+
+        // send request to each server
+        for (SocketChannel socketChannel: socketChannels){
+            socketChannel.write(request.buffer);
+            request.buffer.rewind(); // make buffer readable
+
+        }
+
+        ArrayList<String> errorMessages = new ArrayList<>();
+        //TODO: determine required capacity
+        ByteBuffer responseBuffer = ByteBuffer.allocate(1024);
+
+        // handle response from servers
+        for (SocketChannel socketChannel: socketChannels) {
+            // make buffer ready to be written to
+            responseBuffer.clear();
+            // read data from server
+            socketChannel.read(responseBuffer);
+
+            String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
+                    Charset.forName("UTF-8"));
+
+            if(!response.equals("STORED\r\n")){
+                logger.info("received non-success message from server after set request");
+                logger.info(response);
+                errorMessages.add(response);
+            }
+
+        }
+
+        // respond to client
+        SocketChannel clientSocketChannel = (SocketChannel)request.key.channel();
+
+        if (errorMessages.isEmpty()){
+            logger.info("set-request successfully executed on all servers");
+            responseBuffer.flip(); // change from write into read mode
+            clientSocketChannel.write(responseBuffer);
+        } else {
+            logger.info("set-request not successfully executed on all servers");
+
+            // choose first error message
+            ByteBuffer errorResponse = ByteBuffer.wrap(errorMessages.get(0).getBytes(Charset.forName("UTF-8" )));
+            clientSocketChannel.write(errorResponse);
+        }
+    }
+
+    private void handleGetRequest(Request request) {
+        logger.info("handle get request");
     }
 }

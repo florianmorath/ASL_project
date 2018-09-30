@@ -52,7 +52,7 @@ public class Request {
     private void parseRequest(){
 
         // log received message
-        String requestMessage = new String( buffer.array(), Charset.forName("UTF-8") );
+        String requestMessage = new String(buffer.array(), Charset.forName("UTF-8"));
         logger.info(requestMessage);
 
 
@@ -66,7 +66,7 @@ public class Request {
         if(!(buffer.array()[lastPosition-1] == slash_n && buffer.array()[lastPosition-2] == slash_r)) {
             // incomplete message
             type = Type.INVALID;
-            logger.warning("Incomplete request warning. Missing \r\n.");
+            logger.warning("Incomplete request warning. Missing the two end of line bytes.");
         }
 
 
