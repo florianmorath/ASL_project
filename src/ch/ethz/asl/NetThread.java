@@ -32,6 +32,11 @@ public class NetThread extends Thread {
 
         this.requestQueue = requestQueue;
 
+        connectionSetup(myIp, myPort);
+
+    }
+
+    private void connectionSetup(String myIp, int myPort) {
         try {
             // Create Selector
             selector = Selector.open();
@@ -57,7 +62,7 @@ public class NetThread extends Thread {
      */
     @Override
     public void run() {
-        logger.info("net-thread" + " " + this.getName() + " " + "started.");
+        logger.info("net-thread" + " " + String.valueOf(this.getId()) + " " + "running.");
 
 
         while (true) {
