@@ -57,7 +57,8 @@ public class NetThread extends Thread {
      */
     @Override
     public void run() {
-        logger.info("net-thread started");
+        logger.info("net-thread" + " " + this.getName() + " " + "started.");
+
 
         while (true) {
             try {

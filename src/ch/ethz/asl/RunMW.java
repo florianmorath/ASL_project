@@ -20,7 +20,7 @@ public class RunMW {
 	static int myPort = 0;
 
     /**
-     * IP-addresses of memchached-servers.
+     * IP-addresses and ports (ip:port) of memchached-servers.
      */
 	static List<String> mcAddresses = null;
 
