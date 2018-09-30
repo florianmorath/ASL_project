@@ -20,7 +20,7 @@ public class Request {
     private static final Logger logger = Logger.getLogger(Request.class.getName());
 
 
-    public static enum Type {
+    public enum Type {
         SET,
         GET,
         MULTIGET,
@@ -32,6 +32,9 @@ public class Request {
 
     // contains information about channel over which request was sent
     public SelectionKey key;
+
+    // request type
+    public Type type = Type.INVALID;
 
     public Request(ByteBuffer buffer, SelectionKey key){
         this.buffer = buffer;
@@ -48,13 +51,40 @@ public class Request {
      *
      */
     private void parseRequest(){
-        //TODO: implement parsing
 
-        // change buffer from write mode to read mode
-        buffer.flip();
+        // log received message
         String requestMessage = new String( buffer.array(), Charset.forName("UTF-8") );
-        logger.info("ByteBuffer as utf-8 string");
         logger.info(requestMessage);
+
+
+        //check \r\n at end of request
+        byte slash_r = (byte)'\r';
+        byte slash_n = (byte)'\n';
+
+        // position of last written byte
+        int lastPosition = buffer.position();
+
+        if(!(buffer.array()[lastPosition-1] == slash_n && buffer.array()[lastPosition-2] == slash_r)) {
+            // incomplete message
+            type = Type.INVALID;
+            logger.warning("Incomplete request warning. Missing \r\n.");
+        }
+
+
+        // check and assign type
+        String requestType = new String(buffer.array(), 0, 3, Charset.forName("UTF-8"));
+        if(requestType.equals("get")){
+            //check if get or multiget
+            type = Type.GET;
+            logger.info("Get request");
+        } else if(requestType.equals("set")){
+            logger.info("Set request");
+            type = Type.SET;
+        } else {
+            logger.warning("Request invalid");
+            type = Type.INVALID;
+        }
+
 
     }
 
