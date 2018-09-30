@@ -19,7 +19,7 @@ import java.io.IOException;
  */
 public class NetThread extends Thread {
 
-    private static final Logger logger = Logger.getLogger(Middleware.class.getName());
+    private static final Logger logger = Logger.getLogger(NetThread.class.getName());
 
     // Networking
     private Selector selector;
@@ -109,8 +109,8 @@ public class NetThread extends Thread {
     }
 
     private void readFromChannel(SelectionKey key) {
-        //TODO: a request may be encoded in multiple network packets (set requests)
-        ByteBuffer buffer = ByteBuffer.allocate(4096);
+        //TODO: a request may be encoded in multiple network packets (set requests) -> possible?
+        ByteBuffer buffer = ByteBuffer.allocate(5120); // max 16B key, 4096B value
         SocketChannel channel = (SocketChannel) key.channel();
         int bytesReadCount = 0;
         try {

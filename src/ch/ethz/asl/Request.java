@@ -3,6 +3,7 @@ package ch.ethz.asl;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
+import java.util.logging.Logger;
 
 /**
  * Represents a requests from a client.
@@ -15,6 +16,9 @@ import java.nio.charset.Charset;
  *
  */
 public class Request {
+
+    private static final Logger logger = Logger.getLogger(Request.class.getName());
+
 
     public static enum Type {
         SET,
@@ -49,9 +53,8 @@ public class Request {
         // change buffer from write mode to read mode
         buffer.flip();
         String requestMessage = new String( buffer.array(), Charset.forName("UTF-8") );
-        System.out.println("ByteBuffer as utf-8 string");
-        System.out.println(requestMessage);
-
+        logger.info("ByteBuffer as utf-8 string");
+        logger.info(requestMessage);
 
     }
 
