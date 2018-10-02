@@ -24,6 +24,8 @@ public class WorkerThread extends Thread{
     // networking
     private ArrayList<SocketChannel> socketChannels = new ArrayList<>();
 
+    // round-robin load balancer
+    private int lastServerIndex = 0;
 
 
     public WorkerThread(List<String> mcAddresses, boolean readSharded, LinkedBlockingQueue<Request> requestQueue) {
@@ -105,7 +107,7 @@ public class WorkerThread extends Thread{
 
         ArrayList<String> errorMessages = new ArrayList<>();
         //TODO: determine required capacity
-        ByteBuffer responseBuffer = ByteBuffer.allocate(1024);
+        ByteBuffer responseBuffer = ByteBuffer.allocate(100);
 
         // handle response from servers
         for (SocketChannel socketChannel: socketChannels) {
@@ -122,7 +124,6 @@ public class WorkerThread extends Thread{
                 logger.info(response);
                 errorMessages.add(response);
             }
-
         }
 
         // respond to client
@@ -141,7 +142,38 @@ public class WorkerThread extends Thread{
         }
     }
 
-    private void handleGetRequest(Request request) {
+    private void handleGetRequest(Request request) throws IOException {
         logger.info("handle get request");
+
+        if (!readSharded){
+            // note: does not matter if Get or Multiget request
+
+            // round-robin load balancer
+            lastServerIndex = (lastServerIndex + 1) % socketChannels.size();
+            SocketChannel serverSocketChannel = socketChannels.get(lastServerIndex);
+
+            // forward request to chosen server
+            request.buffer.flip();
+            serverSocketChannel.write(request.buffer);
+
+            // read response
+            // TODO: determine capacity
+            ByteBuffer responseBuffer = ByteBuffer.allocate(11*4096);
+            int bytesReadCount = serverSocketChannel.read(responseBuffer);
+
+            // debugging purpose
+            logger.info("Byte read count from server: ");
+            logger.info(String.valueOf(bytesReadCount));
+
+
+            String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
+                    Charset.forName("UTF-8"));
+            logger.info(response);
+
+            // send response to client
+            SocketChannel clientSocketChannel = (SocketChannel)request.key.channel();
+            responseBuffer.flip(); // change from write into read mode
+            clientSocketChannel.write(responseBuffer);
+        }
     }
 }
