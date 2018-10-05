@@ -126,6 +126,9 @@ public class WorkerThread extends Thread{
             }
         }
 
+        // clear request buffer
+        request.buffer.clear();
+
         // respond to client
         SocketChannel clientSocketChannel = (SocketChannel)request.key.channel();
 
@@ -170,10 +173,15 @@ public class WorkerThread extends Thread{
                     Charset.forName("UTF-8"));
             logger.info(response);
 
+            // clear request buffer
+            request.buffer.clear();
+
             // send response to client
             SocketChannel clientSocketChannel = (SocketChannel)request.key.channel();
             responseBuffer.flip(); // change from write into read mode
             clientSocketChannel.write(responseBuffer);
+        } else {
+            // sharded mode
         }
     }
 }

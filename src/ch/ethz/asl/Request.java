@@ -10,9 +10,8 @@ import java.util.logging.Logger;
  *
  * Structure of different kind of Memtier requests:
  * Get Request:         "get <key>\r\n"
- * Set Request:         "set <key> <flag> <expiry> <value length> <value>\r\n"
+ * Set Request:         "set <key> <flag> <expiry> <value length> \r\n <value>\r\n"
  * Multiget Request:    "get <key1> <key2> <key3>\r\n"
- *
  *
  */
 public class Request {
@@ -51,24 +50,16 @@ public class Request {
      */
     private void parseRequest(){
 
-        // log received message
+        // log received message (debugging purpose -> remove for efficiency)
         String requestMessage = new String(buffer.array(), Charset.forName("UTF-8"));
         logger.info(requestMessage);
 
 
-        //check \r\n at end of request
-        byte slash_r = (byte)'\r';
-        byte slash_n = (byte)'\n';
-
-        // position of last written byte
-        int lastPosition = buffer.position();
-
-        if(!(buffer.array()[lastPosition-1] == slash_n && buffer.array()[lastPosition-2] == slash_r)) {
+        if (!Request.validBuffer(buffer)) {
             // incomplete message
             type = Type.INVALID;
             logger.warning("Incomplete request warning. Missing the two end of line bytes.");
         }
-
 
         // check and assign type
         String requestType = new String(buffer.array(), 0, 3, Charset.forName("UTF-8"));
@@ -85,6 +76,22 @@ public class Request {
         }
 
 
+    }
+
+    public static boolean validBuffer(ByteBuffer buffer) {
+
+        //check \r\n at end of request
+        byte slash_r = (byte)'\r';
+        byte slash_n = (byte)'\n';
+
+        // position of last written byte
+        int lastPosition = buffer.position();
+
+        if(!(buffer.array()[lastPosition-1] == slash_n && buffer.array()[lastPosition-2] == slash_r)) {
+           return false;
+        } else {
+            return true;
+        }
     }
 
 }

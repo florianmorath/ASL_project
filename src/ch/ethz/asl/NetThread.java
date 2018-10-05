@@ -115,9 +115,15 @@ public class NetThread extends Thread {
     }
 
     private void readFromChannel(SelectionKey key) {
-        //TODO: BUG!! a request may be encoded in multiple network packets (set requests) e.g test SET requests for 20s.
+        ByteBuffer buffer;
+        if (key.attachment() == null) {
+            // create a Buffer once for every client socket (will be cleared before client sends new request)
+            buffer = ByteBuffer.allocate(5000); // max 16B key, 4096B value for set request
+            key.attach(buffer);
+        } else {
+            buffer = (ByteBuffer) key.attachment();
+        }
 
-        ByteBuffer buffer = ByteBuffer.allocate(5120); // max 16B key, 4096B value for set request -> 5120
         SocketChannel channel = (SocketChannel) key.channel();
         int bytesReadCount = 0;
         try {
@@ -144,8 +150,16 @@ public class NetThread extends Thread {
             return;
         }
 
-        // create and enqueue Request
-        enqueueRequest(buffer, key);
+        // check if whole request is in the buffer
+        if (Request.validBuffer(buffer)) {
+            // create and enqueue Request
+            enqueueRequest(buffer, key);
+        } else {
+            logger.info("Did not receive whole request yet.");
+        }
+
+
+
     }
 
     private void enqueueRequest(ByteBuffer buffer, SelectionKey key){
