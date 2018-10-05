@@ -23,6 +23,9 @@ public class WorkerThread extends Thread{
 
     // networking
     private ArrayList<SocketChannel> socketChannels = new ArrayList<>();
+    // Allocate response buffer (one is enough because of synchronous connections)
+    // TODO: determine capacity
+    private ByteBuffer responseBuffer = ByteBuffer.allocate(11*4096);
 
     // round-robin load balancer
     private int lastServerIndex = 0;
@@ -47,6 +50,7 @@ public class WorkerThread extends Thread{
                 SocketChannel serverConnection;
                 serverConnection = SocketChannel.open(new InetSocketAddress(serverIp, serverPort));
                 serverConnection.configureBlocking(true); // we want a blocking channel
+
                 socketChannels.add(serverConnection);
                 logger.info( "Worker thread " + String.valueOf(this.getId()) +  " connected to " +
                         serverConnection.getRemoteAddress().toString() + " (" + serverConnection.isConnected() + ")");
@@ -106,8 +110,6 @@ public class WorkerThread extends Thread{
         }
 
         ArrayList<String> errorMessages = new ArrayList<>();
-        //TODO: determine required capacity
-        ByteBuffer responseBuffer = ByteBuffer.allocate(100);
 
         // handle response from servers
         for (SocketChannel socketChannel: socketChannels) {
@@ -126,10 +128,8 @@ public class WorkerThread extends Thread{
             }
         }
 
-        // clear request buffer
-        request.buffer.clear();
-
         // respond to client
+        request.buffer.clear();
         SocketChannel clientSocketChannel = (SocketChannel)request.key.channel();
 
         if (errorMessages.isEmpty()){
@@ -153,32 +153,35 @@ public class WorkerThread extends Thread{
 
             // round-robin load balancer
             lastServerIndex = (lastServerIndex + 1) % socketChannels.size();
-            SocketChannel serverSocketChannel = socketChannels.get(lastServerIndex);
+            SocketChannel socketChannel = socketChannels.get(lastServerIndex);
 
             // forward request to chosen server
             request.buffer.flip();
-            serverSocketChannel.write(request.buffer);
+            socketChannel.write(request.buffer);
 
             // read response
-            // TODO: determine capacity
-            ByteBuffer responseBuffer = ByteBuffer.allocate(11*4096);
-            int bytesReadCount = serverSocketChannel.read(responseBuffer);
+            responseBuffer.clear();
+            int bytesReadCount = socketChannel.read(responseBuffer);
+
+            // may need to read again, if not whole response was read
+            if (!Request.validBuffer(responseBuffer)){
+                socketChannel.read(responseBuffer);
+            }
 
             // debugging purpose
             logger.info("Byte read count from server: ");
             logger.info(String.valueOf(bytesReadCount));
 
-
+            // Debugging purpose
             String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
                     Charset.forName("UTF-8"));
             logger.info(response);
 
-            // clear request buffer
-            request.buffer.clear();
 
             // send response to client
             SocketChannel clientSocketChannel = (SocketChannel)request.key.channel();
             responseBuffer.flip(); // change from write into read mode
+            request.buffer.clear();
             clientSocketChannel.write(responseBuffer);
         } else {
             // sharded mode
