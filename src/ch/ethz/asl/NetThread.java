@@ -31,9 +31,7 @@ public class NetThread extends Thread {
     public NetThread(String myIp, int myPort, LinkedBlockingQueue<Request> requestQueue) {
 
         this.requestQueue = requestQueue;
-
         connectionSetup(myIp, myPort);
-
     }
 
     private void connectionSetup(String myIp, int myPort) {
@@ -157,9 +155,6 @@ public class NetThread extends Thread {
         } else {
             logger.info("Did not receive whole request yet.");
         }
-
-
-
     }
 
     private void enqueueRequest(ByteBuffer buffer, SelectionKey key){
