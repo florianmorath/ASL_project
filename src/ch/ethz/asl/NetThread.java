@@ -101,9 +101,16 @@ public class NetThread extends Thread {
         try {
             SocketChannel channel = serverChannel.accept();
             channel.configureBlocking(false);
+
             // selector listens for read events
-            channel.register(selector, SelectionKey.OP_READ);
+            SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+
+            // create a Buffer once for every client socket (will be cleared before client sends new request)
+            ByteBuffer buffer = ByteBuffer.allocate(5000); // max 16B key, 4096B value for set request
+            key.attach(buffer);
+
             logger.info("Client connection accepted and added to the selector.");
+
         } catch(ClosedChannelException ex){
             logger.warning("Channel closed.");
             ex.printStackTrace();
@@ -115,14 +122,7 @@ public class NetThread extends Thread {
     }
 
     private void readFromChannel(SelectionKey key) {
-        ByteBuffer buffer;
-        if (key.attachment() == null) {
-            // create a Buffer once for every client socket (will be cleared before client sends new request)
-            buffer = ByteBuffer.allocate(5000); // max 16B key, 4096B value for set request
-            key.attach(buffer);
-        } else {
-            buffer = (ByteBuffer) key.attachment();
-        }
+        ByteBuffer buffer = (ByteBuffer) key.attachment();
 
         SocketChannel channel = (SocketChannel) key.channel();
         int bytesReadCount = 0;
