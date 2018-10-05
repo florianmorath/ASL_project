@@ -145,6 +145,8 @@ public class WorkerThread extends Thread{
         }
     }
 
+
+
     private void handleGetRequest(Request request) throws IOException {
         logger.info("handle get request");
 
@@ -161,12 +163,7 @@ public class WorkerThread extends Thread{
 
             // read response
             responseBuffer.clear();
-            int bytesReadCount = socketChannel.read(responseBuffer);
-
-            // may need to read again, if not whole response was read
-            if (!Request.validBuffer(responseBuffer)){
-                socketChannel.read(responseBuffer);
-            }
+            int bytesReadCount = readDataFromSocket(socketChannel);
 
             // debugging purpose
             logger.info("Byte read count from server: ");
@@ -187,4 +184,14 @@ public class WorkerThread extends Thread{
             // sharded mode
         }
     }
+
+    private int readDataFromSocket(SocketChannel socketChannel) throws IOException {
+        // read data until we have the whole response
+        int bytesReadCount = socketChannel.read(responseBuffer);
+        if (!Request.endOfLineExists(responseBuffer)){
+            bytesReadCount += readDataFromSocket(socketChannel);
+        }
+        return bytesReadCount;
+    }
+
 }

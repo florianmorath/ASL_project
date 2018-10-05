@@ -55,7 +55,7 @@ public class Request {
         logger.info(requestMessage);
 
 
-        if (!Request.validBuffer(buffer)) {
+        if (!Request.endOfLineExists(buffer)) {
             // incomplete message
             type = Type.INVALID;
             logger.warning("Incomplete request warning. Missing the two end of line bytes.");
@@ -78,7 +78,7 @@ public class Request {
 
     }
 
-    public static boolean validBuffer(ByteBuffer buffer) {
+    public static boolean endOfLineExists(ByteBuffer buffer) {
 
         //check \r\n at end of request
         byte slash_r = (byte)'\r';

@@ -151,7 +151,7 @@ public class NetThread extends Thread {
         }
 
         // check if whole request is in the buffer
-        if (Request.validBuffer(buffer)) {
+        if (Request.endOfLineExists(buffer)) {
             // create and enqueue Request
             enqueueRequest(buffer, key);
         } else {
