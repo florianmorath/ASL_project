@@ -106,7 +106,7 @@ public class NetThread extends Thread {
             SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
 
             // create a Buffer once for every client socket (will be cleared before client sends new request)
-            ByteBuffer buffer = ByteBuffer.allocate(5000); // max 16B key, 4096B value for set request
+            ByteBuffer buffer = ByteBuffer.allocate(1024*5); // max 16B key, 4096B value for set request
             key.attach(buffer);
 
             logger.info("Client connection accepted and added to the selector.");

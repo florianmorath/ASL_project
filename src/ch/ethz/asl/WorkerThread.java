@@ -24,7 +24,6 @@ public class WorkerThread extends Thread{
     // networking
     private ArrayList<SocketChannel> socketChannels = new ArrayList<>();
     // Allocate response buffer (one is enough because of synchronous connections)
-    // TODO: determine capacity
     private ByteBuffer responseBuffer = ByteBuffer.allocate(11*4096);
 
     // round-robin load balancer
@@ -116,7 +115,7 @@ public class WorkerThread extends Thread{
             // make buffer ready to be written to
             responseBuffer.clear();
             // read data from server
-            socketChannel.read(responseBuffer);
+            readDataFromSocket(socketChannel);
 
             String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
                     Charset.forName("UTF-8"));
@@ -187,10 +186,13 @@ public class WorkerThread extends Thread{
 
     private int readDataFromSocket(SocketChannel socketChannel) throws IOException {
         // read data until we have the whole response
-        int bytesReadCount = socketChannel.read(responseBuffer);
-        if (!Request.endOfLineExists(responseBuffer)){
-            bytesReadCount += readDataFromSocket(socketChannel);
-        }
+        int bytesReadCount = 0;
+
+        do {
+            bytesReadCount += socketChannel.read(responseBuffer);
+
+        } while (!Request.endOfLineExists(responseBuffer));
+
         return bytesReadCount;
     }
 
