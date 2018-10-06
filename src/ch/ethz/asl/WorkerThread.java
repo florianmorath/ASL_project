@@ -203,7 +203,7 @@ public class WorkerThread extends Thread {
             //        Charset.forName("UTF-8"));
             // logger.info(response);
 
-
+            
             // send response to client
             SocketChannel clientSocketChannel = (SocketChannel) request.key.channel();
             responseBuffer.flip(); // change from write into read mode
@@ -211,7 +211,65 @@ public class WorkerThread extends Thread {
             clientSocketChannel.write(responseBuffer);
         } else {
             // sharded mode
+
+            String requestString = new String(request.buffer.array(), 3, request.buffer.position(),
+                    Charset.forName("UTF-8")).trim(); // trim removes \r\n at the end
+            String[] keys = requestString.split(" ");
+            logger.info(Arrays.toString(keys));
+            int keyIndex = 0;
+            // if number of keys is smaller than number of servers, not all servers will be used
+            int[] usedServers = new int[socketChannels.size()];
+
+            // split up Multiget and send requests
+            for(int index = 0; index < socketChannels.size(); index++) {
+
+                int numKeysToHandle = getKeyCount(index, keys.length);
+                logger.info("Number of keys to handle by index " + String.valueOf(index) + ": " + String.valueOf(numKeysToHandle));
+                if (numKeysToHandle != 0) {
+
+                    // construct get request
+                    responseBuffer.clear();
+                    responseBuffer.put("get".getBytes((Charset.forName("UTF-8"))));
+                    for (int i = 0; i < numKeysToHandle; i++) {
+                        logger.info("key index = " + String.valueOf(keyIndex));
+                        responseBuffer.put((" " + keys[keyIndex]).getBytes(Charset.forName("UTF-8")));
+                        keyIndex++;
+                    }
+                    responseBuffer.put(("\r\n").getBytes(Charset.forName("UTF-8")));
+
+                    // get next server (round-robin)
+                    lastServerIndex = (lastServerIndex + 1) % socketChannels.size();
+                    SocketChannel socketChannel = socketChannels.get(lastServerIndex);
+
+                    // mark this server as used
+                    usedServers[lastServerIndex] = 1;
+
+                    // Debugging purpose (remove for efficiency)
+                    String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
+                            Charset.forName("UTF-8"));
+                    logger.info(String.valueOf(this.getId()));
+                    logger.info("Send to server: " + response);
+
+                    // send request
+                    responseBuffer.flip();
+                    socketChannel.write(responseBuffer);
+
+
+                }
+            }
+
         }
+    }
+
+    private int getKeyCount(int index, int numKeys) {
+        // figure out for how many keys this server is responsible
+        int keyCount = 0;
+        int currentIndex = index;
+        while (currentIndex < numKeys) {
+            currentIndex += socketChannels.size();
+            keyCount++;
+        }
+        return keyCount;
     }
 
     /**
