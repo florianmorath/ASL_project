@@ -157,6 +157,8 @@ public class WorkerThread extends Thread {
 
         // respond to client
         request.buffer.clear(); // allows client to send new request
+
+
         SocketChannel clientSocketChannel = (SocketChannel) request.key.channel();
 
         if (errorMessages.isEmpty()) {
@@ -214,9 +216,14 @@ public class WorkerThread extends Thread {
             clientSocketChannel.write(responseBuffer);
         } else {
             // sharded mode
+            String requestMsg = new String(Arrays.copyOfRange(request.buffer.array(), 0, request.buffer.position()),
+                    Charset.forName("UTF-8"));
+            logger.info("before split: " + requestMsg);
 
-            String requestString = new String(request.buffer.array(), 3, request.buffer.position(),
-                    Charset.forName("UTF-8")).trim(); // trim removes \r\n at the end
+            String requestString = new String(Arrays.copyOfRange(request.buffer.array(), 3, request.buffer.position() - 2)).trim(); // -2 to get rid of "\r\n"
+            
+            logger.info("after split: " + requestString);
+
             String[] keys = requestString.split(" ");
             logger.info("key array = " + Arrays.toString(keys));
             int keyIndex = 0;
@@ -287,6 +294,7 @@ public class WorkerThread extends Thread {
                         responseBuffer.position(responseBuffer.position() - 5);
                         responseBuffer.flip();
                         shardedBuffer.put(responseBuffer);
+
                     }
                 }
             }
@@ -295,11 +303,13 @@ public class WorkerThread extends Thread {
             SocketChannel clientChannel = (SocketChannel) request.key.channel();
             if (error_flag) {
                 clientChannel.write(ByteBuffer.wrap("ERROR\r\n".getBytes()));
+                logger.info("error message send to client");
             } else {
-                shardedBuffer.put("END\r\n".getBytes());
+
+                shardedBuffer.put(ByteBuffer.wrap("END\r\n".getBytes()));
 
                 // Debugging purpose (remove for efficiency)
-                String response = new String(Arrays.copyOfRange(shardedBuffer.array(), 0, responseBuffer.position()),
+                String response = new String(Arrays.copyOfRange(shardedBuffer.array(), 0, shardedBuffer.position()),
                         Charset.forName("UTF-8"));
                 logger.info(String.valueOf(this.getId()));
                 logger.info("Send to client: " + response);
