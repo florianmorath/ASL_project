@@ -50,7 +50,7 @@ class NetThreadTest {
         buf.put("get memtier-1234\r\n".getBytes());
         buf.flip();
         client.channel.write(buf);
-        client.sleep(2000);
+        client.sleep(100);
         assertTrue(net.requestQueue.size() == 1);
     }
 
