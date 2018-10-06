@@ -63,8 +63,8 @@ public class Request {
     private void parseRequest() {
 
         // log received message (debugging purpose -> remove for efficiency)
-        // String requestMessage = new String(buffer.array(), Charset.forName("UTF-8"));
-        // logger.info(requestMessage);
+        String requestMessage = new String(buffer.array(), Charset.forName("UTF-8"));
+        logger.info(requestMessage);
 
         if (!Request.endOfLineExists(buffer)) {
             // incomplete message

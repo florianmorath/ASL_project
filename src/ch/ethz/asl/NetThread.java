@@ -1,5 +1,6 @@
 package ch.ethz.asl;
 
+import java.nio.charset.Charset;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 import java.nio.channels.ServerSocketChannel;
@@ -129,6 +130,11 @@ public class NetThread extends Thread {
             bytesReadCount = channel.read(buffer);
             logger.info("Byte read count: ");
             logger.info(String.valueOf(bytesReadCount));
+
+            // debugging purpose -> remove
+            String requestMessage = new String(buffer.array(), Charset.forName("UTF-8"));
+            logger.info("bytes read from client: " + requestMessage);
+
         } catch (IOException ex) {
             logger.warning("Error while reading data from client");
             ex.printStackTrace();

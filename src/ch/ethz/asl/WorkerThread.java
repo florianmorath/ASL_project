@@ -2,6 +2,7 @@ package ch.ethz.asl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
@@ -26,8 +27,10 @@ public class WorkerThread extends Thread {
 
     // networking
     private ArrayList<SocketChannel> socketChannels = new ArrayList<>();
-    // allocate response buffer (one is enough because of synchronous connections)
+    // this buffer is used to read in the responses from the memcached servers
     private ByteBuffer responseBuffer = ByteBuffer.allocate(11 * 4096); // Multiget receives up to 10 values
+    // this buffer is used to reassemble the responses for the sharded mode
+    ByteBuffer shardedBuffer = ByteBuffer.allocate(11 * 4096);
 
     // round-robin load balancer
     // TODO: do empirical evaluation showing that all memcached servers are under same load
@@ -83,7 +86,7 @@ public class WorkerThread extends Thread {
      * thread.
      * <p>
      * The worker thread takes out a request of the queue, and processes it depending on the type. When finished it will
-     * take antother request and so forth.
+     * take another request and so forth.
      */
     @Override
     public void run() {
@@ -139,7 +142,7 @@ public class WorkerThread extends Thread {
         for (SocketChannel socketChannel : socketChannels) {
             // read data from server
             responseBuffer.clear();
-            readDataFromSocket(socketChannel);
+            readDataFromSocket(socketChannel, responseBuffer);
 
             // copying buffer is ok, because response to a set request is only a few bytes
             String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
@@ -192,7 +195,7 @@ public class WorkerThread extends Thread {
 
             // read response
             responseBuffer.clear();
-            int bytesReadCount = readDataFromSocket(socketChannel);
+            int bytesReadCount = readDataFromSocket(socketChannel, responseBuffer);
 
             // debugging purpose
             logger.info("Byte read count from server: ");
@@ -215,16 +218,18 @@ public class WorkerThread extends Thread {
             String requestString = new String(request.buffer.array(), 3, request.buffer.position(),
                     Charset.forName("UTF-8")).trim(); // trim removes \r\n at the end
             String[] keys = requestString.split(" ");
-            logger.info(Arrays.toString(keys));
+            logger.info("key array = " + Arrays.toString(keys));
             int keyIndex = 0;
             // if number of keys is smaller than number of servers, not all servers will be used
             int[] usedServers = new int[socketChannels.size()];
+            Arrays.fill(usedServers, -1);
 
             // split up Multiget and send requests
             for(int index = 0; index < socketChannels.size(); index++) {
 
                 int numKeysToHandle = getKeyCount(index, keys.length);
-                logger.info("Number of keys to handle by index " + String.valueOf(index) + ": " + String.valueOf(numKeysToHandle));
+                logger.info("Number of keys to handle by index " + String.valueOf(index) + ": " +
+                        String.valueOf(numKeysToHandle));
                 if (numKeysToHandle != 0) {
 
                     // construct get request
@@ -241,8 +246,8 @@ public class WorkerThread extends Thread {
                     lastServerIndex = (lastServerIndex + 1) % socketChannels.size();
                     SocketChannel socketChannel = socketChannels.get(lastServerIndex);
 
-                    // mark this server as used
-                    usedServers[lastServerIndex] = 1;
+                    // mark this server as used s.t we know the order in which servers executed.
+                    usedServers[index] = lastServerIndex;
 
                     // Debugging purpose (remove for efficiency)
                     String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
@@ -254,8 +259,54 @@ public class WorkerThread extends Thread {
                     responseBuffer.flip();
                     socketChannel.write(responseBuffer);
 
-
                 }
+            }
+
+            // read and reassemble responses
+            boolean error_flag = false;
+            shardedBuffer.clear(); // put reassembled response into this buffer
+            for(int index = 0; index < socketChannels.size(); index++) {
+                int serverIndex = usedServers[index];
+                if (serverIndex != -1) {
+                    responseBuffer.clear();
+                    readDataFromSocket(socketChannels.get(serverIndex), responseBuffer);
+                    String endString = new String(responseBuffer.array(), responseBuffer.position()-5, 3,
+                            Charset.forName("UTF-8"));
+
+                    // Debugging purpose (remove for efficiency)
+                    String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
+                            Charset.forName("UTF-8"));
+                    logger.info(String.valueOf(this.getId()));
+                    logger.info("Received from server: " + response);
+
+                    if (!endString.equals("END")) {
+                        // error case
+                        error_flag = true;
+                        logger.info("Multiget not successfully executed on memcached server.");
+                    } else {
+                        responseBuffer.position(responseBuffer.position() - 5);
+                        responseBuffer.flip();
+                        shardedBuffer.put(responseBuffer);
+                    }
+                }
+            }
+
+            // send response to client
+            SocketChannel clientChannel = (SocketChannel) request.key.channel();
+            if (error_flag) {
+                clientChannel.write(ByteBuffer.wrap("ERROR\r\n".getBytes()));
+            } else {
+                shardedBuffer.put("END\r\n".getBytes());
+
+                // Debugging purpose (remove for efficiency)
+                String response = new String(Arrays.copyOfRange(shardedBuffer.array(), 0, responseBuffer.position()),
+                        Charset.forName("UTF-8"));
+                logger.info(String.valueOf(this.getId()));
+                logger.info("Send to client: " + response);
+
+                request.buffer.clear(); // allows client to send new request
+                shardedBuffer.flip();
+                clientChannel.write(shardedBuffer);
             }
 
         }
@@ -277,17 +328,18 @@ public class WorkerThread extends Thread {
      * invoked on the socketChannel until a new line is read.
      *
      * @param socketChannel socket channel to read from.
+     * @param buffer the buffer into which we write.
      * @return the number of bytes read in total.
      * @throws IOException
      */
-    private int readDataFromSocket(SocketChannel socketChannel) throws IOException {
+    private int readDataFromSocket(SocketChannel socketChannel, ByteBuffer buffer) throws IOException {
         // read data until we have the whole response
         int bytesReadCount = 0;
 
         do {
-            bytesReadCount += socketChannel.read(responseBuffer);
+            bytesReadCount += socketChannel.read(buffer);
 
-        } while (!Request.endOfLineExists(responseBuffer));
+        } while (!Request.endOfLineExists(buffer));
 
         return bytesReadCount;
     }
