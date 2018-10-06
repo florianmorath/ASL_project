@@ -2,7 +2,6 @@ package ch.ethz.asl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
@@ -33,7 +32,7 @@ public class WorkerThread extends Thread {
     ByteBuffer shardedBuffer = ByteBuffer.allocate(11 * 4096);
 
     // round-robin load balancer
-    // TODO: do empirical evaluation showing that all memcached servers are under same load
+    // TODO: do empirical evaluation showing that all memcached servers are under same load (put into test folder)
     private int lastServerIndex = 0;
 
 
@@ -176,7 +175,8 @@ public class WorkerThread extends Thread {
 
     /**
      * Process Get request. If we are in non sharded mode, no mather if Get or Multiget, the request is forwarded to
-     * one server (round robin) and the response will be forwarded to the client.
+     * one server (round robin) and the response will be forwarded to the client. If we are in sharded mode, the
+     * request is split evenly, and distributed among the memcached servers.
      *
      * @param request a Get request.
      * @throws IOException
@@ -197,53 +197,39 @@ public class WorkerThread extends Thread {
 
             // read response
             responseBuffer.clear();
-            int bytesReadCount = readDataFromSocket(socketChannel, responseBuffer);
+            readDataFromSocket(socketChannel, responseBuffer);
 
-            // debugging purpose
-            logger.info("Byte read count from server: ");
-            logger.info(String.valueOf(bytesReadCount));
-
-            // Debugging purpose (remove for efficiency)
-            // String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
-            //        Charset.forName("UTF-8"));
-            // logger.info(response);
-
-            
             // send response to client
             SocketChannel clientSocketChannel = (SocketChannel) request.key.channel();
             responseBuffer.flip(); // change from write into read mode
             request.buffer.clear(); // allows client to send new request
             clientSocketChannel.write(responseBuffer);
+
         } else {
             // sharded mode
-            String requestMsg = new String(Arrays.copyOfRange(request.buffer.array(), 0, request.buffer.position()),
-                    Charset.forName("UTF-8"));
-            logger.info("before split: " + requestMsg);
 
-            String requestString = new String(Arrays.copyOfRange(request.buffer.array(), 3, request.buffer.position() - 2)).trim(); // -2 to get rid of "\r\n"
-            
-            logger.info("after split: " + requestString);
-
+            // First extract the keys from the Multiget.
+            String requestString = new String(Arrays.copyOfRange(request.buffer.array(), 3,
+                    request.buffer.position() - 2)).trim();
             String[] keys = requestString.split(" ");
-            logger.info("key array = " + Arrays.toString(keys));
-            int keyIndex = 0;
+
             // if number of keys is smaller than number of servers, not all servers will be used
             int[] usedServers = new int[socketChannels.size()];
             Arrays.fill(usedServers, -1);
 
+            int keyIndex = 0;
             // split up Multiget and send requests
-            for(int index = 0; index < socketChannels.size(); index++) {
+            for (int index = 0; index < socketChannels.size(); index++) {
 
                 int numKeysToHandle = getKeyCount(index, keys.length);
-                logger.info("Number of keys to handle by index " + String.valueOf(index) + ": " +
-                        String.valueOf(numKeysToHandle));
+
                 if (numKeysToHandle != 0) {
 
                     // construct get request
                     responseBuffer.clear();
                     responseBuffer.put("get".getBytes((Charset.forName("UTF-8"))));
+
                     for (int i = 0; i < numKeysToHandle; i++) {
-                        logger.info("key index = " + String.valueOf(keyIndex));
                         responseBuffer.put((" " + keys[keyIndex]).getBytes(Charset.forName("UTF-8")));
                         keyIndex++;
                     }
@@ -253,14 +239,9 @@ public class WorkerThread extends Thread {
                     lastServerIndex = (lastServerIndex + 1) % socketChannels.size();
                     SocketChannel socketChannel = socketChannels.get(lastServerIndex);
 
-                    // mark this server as used s.t we know the order in which servers executed.
+                    // mark this server as used. We know the order in which the servers executed based on the position
+                    // in the array. The value at this position will tell which server executed (-1 if none).
                     usedServers[index] = lastServerIndex;
-
-                    // Debugging purpose (remove for efficiency)
-                    String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
-                            Charset.forName("UTF-8"));
-                    logger.info(String.valueOf(this.getId()));
-                    logger.info("Send to server: " + response);
 
                     // send request
                     responseBuffer.flip();
@@ -272,26 +253,20 @@ public class WorkerThread extends Thread {
             // read and reassemble responses
             boolean error_flag = false;
             shardedBuffer.clear(); // put reassembled response into this buffer
-            for(int index = 0; index < socketChannels.size(); index++) {
+            for (int index = 0; index < socketChannels.size(); index++) {
                 int serverIndex = usedServers[index];
                 if (serverIndex != -1) {
                     responseBuffer.clear();
                     readDataFromSocket(socketChannels.get(serverIndex), responseBuffer);
-                    String endString = new String(responseBuffer.array(), responseBuffer.position()-5, 3,
+                    String endString = new String(responseBuffer.array(), responseBuffer.position() - 5, 3,
                             Charset.forName("UTF-8"));
-
-                    // Debugging purpose (remove for efficiency)
-                    String response = new String(Arrays.copyOfRange(responseBuffer.array(), 0, responseBuffer.position()),
-                            Charset.forName("UTF-8"));
-                    logger.info(String.valueOf(this.getId()));
-                    logger.info("Received from server: " + response);
 
                     if (!endString.equals("END")) {
                         // error case
                         error_flag = true;
                         logger.info("Multiget not successfully executed on memcached server.");
                     } else {
-                        responseBuffer.position(responseBuffer.position() - 5);
+                        responseBuffer.position(responseBuffer.position() - 5); // remove "END\r\n"
                         responseBuffer.flip();
                         shardedBuffer.put(responseBuffer);
 
@@ -304,15 +279,9 @@ public class WorkerThread extends Thread {
             if (error_flag) {
                 clientChannel.write(ByteBuffer.wrap("ERROR\r\n".getBytes()));
                 logger.info("error message send to client");
+
             } else {
-
                 shardedBuffer.put(ByteBuffer.wrap("END\r\n".getBytes()));
-
-                // Debugging purpose (remove for efficiency)
-                String response = new String(Arrays.copyOfRange(shardedBuffer.array(), 0, shardedBuffer.position()),
-                        Charset.forName("UTF-8"));
-                logger.info(String.valueOf(this.getId()));
-                logger.info("Send to client: " + response);
 
                 request.buffer.clear(); // allows client to send new request
                 shardedBuffer.flip();
@@ -322,8 +291,16 @@ public class WorkerThread extends Thread {
         }
     }
 
+    /**
+     * Figure out how many keys the next server should handle based on the given index. The number is calculated s.t
+     * the Multiget is evenly split among the servers. There exist indices from 0 to the number of memcached servers -1
+     * and the sum of the return value of this method over all those indices has to be equal to the total number of keys.
+     *
+     * @param index   used to make an even split.
+     * @param numKeys total number of keys the multiget contains.
+     * @return number of keys the next server should handle.
+     */
     private int getKeyCount(int index, int numKeys) {
-        // figure out for how many keys this server is responsible
         int keyCount = 0;
         int currentIndex = index;
         while (currentIndex < numKeys) {
@@ -338,7 +315,7 @@ public class WorkerThread extends Thread {
      * invoked on the socketChannel until a new line is read.
      *
      * @param socketChannel socket channel to read from.
-     * @param buffer the buffer into which we write.
+     * @param buffer        the buffer into which we write.
      * @return the number of bytes read in total.
      * @throws IOException
      */

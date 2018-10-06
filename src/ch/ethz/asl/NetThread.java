@@ -1,7 +1,5 @@
 package ch.ethz.asl;
 
-import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 import java.nio.channels.ServerSocketChannel;
@@ -13,11 +11,11 @@ import java.net.InetSocketAddress;
 import java.io.IOException;
 
 
-
 /**
  * The net-thread is responsible for client connections. It will parse requests from clients and put them into a
  * queue.
  *
+ * @author Florian Morath
  */
 public class NetThread extends Thread {
 
@@ -106,12 +104,12 @@ public class NetThread extends Thread {
             SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
 
             // create a Buffer once for every client socket (will be cleared before client sends new request)
-            ByteBuffer buffer = ByteBuffer.allocate(1024*5); // max 16B key, 4096B value for set request
+            ByteBuffer buffer = ByteBuffer.allocate(1024 * 5); // max 16B key, 4096B value for set request
             key.attach(buffer);
 
             logger.info("Client connection accepted and added to the selector.");
 
-        } catch(ClosedChannelException ex){
+        } catch (ClosedChannelException ex) {
             logger.warning("Channel closed.");
             ex.printStackTrace();
 
@@ -127,20 +125,12 @@ public class NetThread extends Thread {
         SocketChannel channel = (SocketChannel) key.channel();
         int bytesReadCount = 0;
         try {
-            // debugging purpose -> remove
-            String requestMsg = new String(Arrays.copyOfRange(buffer.array(), 0, buffer.position()),
-                    Charset.forName("UTF-8"));
-            logger.info("buffer before client read : " + requestMsg);
 
             // read data from channel into buffer
             bytesReadCount = channel.read(buffer);
             logger.info("Byte read count: ");
             logger.info(String.valueOf(bytesReadCount));
 
-            // debugging purpose -> remove
-            String requestMsg2 = new String(Arrays.copyOfRange(buffer.array(), 0, buffer.position()),
-                    Charset.forName("UTF-8"));
-            logger.info("bytes read from client: " + requestMsg2);
 
         } catch (IOException ex) {
             logger.warning("Error while reading data from client");
@@ -170,13 +160,13 @@ public class NetThread extends Thread {
         }
     }
 
-    private void enqueueRequest(ByteBuffer buffer, SelectionKey key){
+    private void enqueueRequest(ByteBuffer buffer, SelectionKey key) {
         Request req = new Request(buffer, key);
 
-        try{
+        try {
             requestQueue.put(req);
             logger.info("request enqueued");
-        } catch (Exception ex){
+        } catch (Exception ex) {
             logger.warning("Could not enqueue request.");
             ex.printStackTrace();
         }
