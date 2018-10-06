@@ -23,9 +23,9 @@ public class NetThread extends Thread {
 
     // Networking
     private Selector selector;
-    private ServerSocketChannel serverChannel;
+    public ServerSocketChannel serverChannel;
 
-    private LinkedBlockingQueue<Request> requestQueue;
+    public LinkedBlockingQueue<Request> requestQueue;
 
 
     public NetThread(String myIp, int myPort, LinkedBlockingQueue<Request> requestQueue) {
@@ -160,7 +160,7 @@ public class NetThread extends Thread {
         }
     }
 
-    private void enqueueRequest(ByteBuffer buffer, SelectionKey key) {
+    public void enqueueRequest(ByteBuffer buffer, SelectionKey key) {
         Request req = new Request(buffer, key);
 
         try {
