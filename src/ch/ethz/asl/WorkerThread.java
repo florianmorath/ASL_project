@@ -25,7 +25,7 @@ public class WorkerThread extends Thread {
     private boolean readSharded;
 
     // networking
-    private ArrayList<SocketChannel> socketChannels = new ArrayList<>();
+    public ArrayList<SocketChannel> socketChannels = new ArrayList<>();
     // this buffer is used to read in the responses from the memcached servers
     private ByteBuffer responseBuffer = ByteBuffer.allocate(11 * 4096); // Multiget receives up to 10 values
     // this buffer is used to reassemble the responses for the sharded mode

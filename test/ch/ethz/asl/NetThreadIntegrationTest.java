@@ -50,11 +50,12 @@ class NetThreadIntegrationTest {
     void testReadFromChannel() throws IOException, InterruptedException {
         net.requestQueue.clear();
         ByteBuffer buf = ByteBuffer.allocate(1024);
-        buf.put("get memtier-1234\r\n".getBytes());
+        buf.put("set memtier-123 0 900 10\r\nxxxxxxxxxx\r\n".getBytes());
         buf.flip();
         client.channel.write(buf);
         client.sleep(100);
         assertTrue(net.requestQueue.size() == 1);
+
     }
 
     @AfterEach
