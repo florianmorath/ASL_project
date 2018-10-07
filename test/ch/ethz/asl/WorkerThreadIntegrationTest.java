@@ -37,7 +37,6 @@ class WorkerThreadIntegrationTest {
     WorkerThread worker;
 
 
-
     @BeforeEach
     void setUp() throws InterruptedException {
 
@@ -64,7 +63,7 @@ class WorkerThreadIntegrationTest {
 
     @AfterEach
     void tearDown() throws IOException {
-        for (SocketChannel socket: worker.socketChannels) {
+        for (SocketChannel socket : worker.socketChannels) {
             socket.close();
         }
 
@@ -362,16 +361,16 @@ class WorkerThreadIntegrationTest {
         System.out.println(response);
         assertEquals(
                 "VALUE set_key2 0 10\r\n" +
-                "2222222222\r\n" +
-                "VALUE set_key1 0 10\r\n" +
-                "1111111111\r\n" +
-                "VALUE set_key2 0 10\r\n" +
-                "2222222222\r\n" +
-                "VALUE set_key1 0 10\r\n" +
-                "1111111111\r\n" +
-                "VALUE set_key2 0 10\r\n" +
-                "2222222222\r\n" +        
-                "END\r\n", response);
+                        "2222222222\r\n" +
+                        "VALUE set_key1 0 10\r\n" +
+                        "1111111111\r\n" +
+                        "VALUE set_key2 0 10\r\n" +
+                        "2222222222\r\n" +
+                        "VALUE set_key1 0 10\r\n" +
+                        "1111111111\r\n" +
+                        "VALUE set_key2 0 10\r\n" +
+                        "2222222222\r\n" +
+                        "END\r\n", response);
     }
 
 

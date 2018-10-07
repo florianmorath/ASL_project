@@ -57,8 +57,6 @@ public class Request {
     /**
      * Checks if request corresponds to a Get or a Set request and checks if request ends with \r\n.
      * Sets the Type of the Request instance.
-     * <p>
-     * note: INVALID requests will be discarded by the worker thread.
      */
     private void parseRequest() {
 

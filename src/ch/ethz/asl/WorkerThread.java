@@ -103,7 +103,9 @@ public class WorkerThread extends Thread {
                 } else if (request.type == Request.Type.GET) {
                     handleGetRequest(request);
                 } else {
-                    // invalid request -> ignore it
+                    // invalid request  -> send error message to client
+                    SocketChannel clientChannel = (SocketChannel) request.key.channel();
+                    clientChannel.write(ByteBuffer.wrap("ERROR\r\n".getBytes()));
                 }
 
 
