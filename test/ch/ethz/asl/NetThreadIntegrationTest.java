@@ -23,7 +23,7 @@ class NetThreadIntegrationTest {
     TestClient client;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws InterruptedException {
 
         LinkedBlockingQueue<Request> queue = new LinkedBlockingQueue<>();
         net = new NetThread(ip, port, queue);
@@ -31,6 +31,8 @@ class NetThreadIntegrationTest {
 
         client = new TestClient();
         client.start();
+
+        Thread.sleep(100);
     }
 
     @Test

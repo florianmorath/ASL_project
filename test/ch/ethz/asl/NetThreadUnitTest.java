@@ -24,18 +24,18 @@ class NetThreadUnitTest {
     Selector selector;
 
     @Mock
-    ServerSocketChannel channel;
+    ServerSocketChannel serverChannel;
+
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-
     }
 
     @Test
     void testReadFromChannel() throws IOException {
-
         verify(selector, times(1)).open();
+
     }
 
     @AfterEach

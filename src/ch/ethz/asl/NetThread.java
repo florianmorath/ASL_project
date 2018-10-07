@@ -119,7 +119,7 @@ public class NetThread extends Thread {
         }
     }
 
-    private void readFromChannel(SelectionKey key) {
+    public void readFromChannel(SelectionKey key) {
         ByteBuffer buffer = (ByteBuffer) key.attachment();
 
         SocketChannel channel = (SocketChannel) key.channel();
