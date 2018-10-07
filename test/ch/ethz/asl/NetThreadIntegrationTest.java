@@ -11,10 +11,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.LinkedBlockingQueue;
 
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
-class NetThreadTest {
+class NetThreadIntegrationTest {
     public static int port = 1234;
     public static String ip = "localhost";
 
@@ -67,7 +68,7 @@ class TestClient extends Thread {
     public void run() {
         super.run();
         try {
-            channel = SocketChannel.open(new InetSocketAddress(NetThreadTest.ip, NetThreadTest.port));
+            channel = SocketChannel.open(new InetSocketAddress(NetThreadIntegrationTest.ip, NetThreadIntegrationTest.port));
 
         } catch (IOException e) {
             e.printStackTrace();

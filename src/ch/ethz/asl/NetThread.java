@@ -22,7 +22,7 @@ public class NetThread extends Thread {
     private static final Logger logger = Logger.getLogger(NetThread.class.getName());
 
     // Networking
-    private Selector selector;
+    public Selector selector;
     public ServerSocketChannel serverChannel;
 
     public LinkedBlockingQueue<Request> requestQueue;
