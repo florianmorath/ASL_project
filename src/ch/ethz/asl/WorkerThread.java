@@ -124,7 +124,7 @@ public class WorkerThread extends Thread {
      * @param request a set request
      * @throws IOException
      */
-    private void handleSetRequest(Request request) throws IOException {
+    public void handleSetRequest(Request request) throws IOException {
         logger.info("handle set request");
 
         request.buffer.flip(); // sets limit to position and position to 0 (read mode)
@@ -181,7 +181,7 @@ public class WorkerThread extends Thread {
      * @param request a Get request.
      * @throws IOException
      */
-    private void handleGetRequest(Request request) throws IOException {
+    public void handleGetRequest(Request request) throws IOException {
         logger.info("handle get request");
 
         if (!readSharded) {
@@ -221,7 +221,7 @@ public class WorkerThread extends Thread {
             // split up Multiget and send requests
             for (int index = 0; index < socketChannels.size(); index++) {
 
-                int numKeysToHandle = getKeyCount(index, keys.length);
+                int numKeysToHandle = WorkerThread.getKeyCount(index, keys.length, socketChannels.size());
 
                 if (numKeysToHandle != 0) {
 
@@ -296,15 +296,16 @@ public class WorkerThread extends Thread {
      * the Multiget is evenly split among the servers. There exist indices from 0 to the number of memcached servers -1
      * and the sum of the return value of this method over all those indices has to be equal to the total number of keys.
      *
-     * @param index   used to make an even split.
-     * @param numKeys total number of keys the multiget contains.
+     * @param index       used to make an even split.
+     * @param numKeys     total number of keys the multiget contains.
+     * @param serverCount total number of memcached servers.
      * @return number of keys the next server should handle.
      */
-    private int getKeyCount(int index, int numKeys) {
+    public static int getKeyCount(int index, int numKeys, int serverCount) {
         int keyCount = 0;
         int currentIndex = index;
         while (currentIndex < numKeys) {
-            currentIndex += socketChannels.size();
+            currentIndex += serverCount;
             keyCount++;
         }
         return keyCount;
