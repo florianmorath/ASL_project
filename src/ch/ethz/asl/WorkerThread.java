@@ -22,7 +22,7 @@ public class WorkerThread extends Thread {
     private static final Logger logger = Logger.getLogger(WorkerThread.class.getName());
 
     private LinkedBlockingQueue<Request> requestQueue;
-    private boolean readSharded;
+    public boolean readSharded;
 
     // networking
     public ArrayList<SocketChannel> socketChannels = new ArrayList<>();
