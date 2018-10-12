@@ -21,10 +21,19 @@ public class NetThread extends Thread {
 
     private static final Logger logger = Logger.getLogger(NetThread.class.getName());
 
-    // Networking
+    /**
+     * The selector is used to handle multiple client connections simultaneously by a single thread.
+     */
     public Selector selector;
+
+    /**
+     * This channel is used to accept new client connections.
+     */
     public ServerSocketChannel serverChannel;
 
+    /**
+     * The queue into which the net-thread puts its requests.
+     */
     public LinkedBlockingQueue<Request> requestQueue;
 
 
@@ -34,6 +43,13 @@ public class NetThread extends Thread {
         connectionSetup(myIp, myPort);
     }
 
+    /**
+     * Net-thread creates a selector and a server socket channel to which it binds to.
+     * Clients can connect to this socket to establish new connections.
+     *
+     * @param myIp   ip of net-thread.
+     * @param myPort port of net-thread.
+     */
     private void connectionSetup(String myIp, int myPort) {
         try {
             // Create Selector
@@ -57,6 +73,8 @@ public class NetThread extends Thread {
      * to create a thread, starting the thread causes the object's
      * <code>run</code> method to be called in that separately executing
      * thread.
+     * <p>
+     * The main-loop of the net-thread. The select call on the selector blocks until a new I/O event occurred.
      */
     @Override
     public void run() {
@@ -95,6 +113,10 @@ public class NetThread extends Thread {
 
     }
 
+    /**
+     * Called whenever an accept event occurred i.e a client wants to establish a new connection. A new socket channel
+     * is created exclusively for the connection to the new client.
+     */
     private void acceptClientConnection() {
         try {
             SocketChannel channel = serverChannel.accept();
@@ -103,6 +125,7 @@ public class NetThread extends Thread {
             // selector listens for read events
             SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
 
+            // TODO: Maybe use direct buffer for better throughput
             // create a Buffer once for every client socket (will be cleared before client sends new request)
             ByteBuffer buffer = ByteBuffer.allocate(1024 * 5); // max 16B key, 4096B value for set request
             key.attach(buffer);
@@ -119,6 +142,11 @@ public class NetThread extends Thread {
         }
     }
 
+    /**
+     * Called whenever a read event occurred i.e a client send some data which is now ready to be read.
+     *
+     * @param key the selection key returned by the selector.
+     */
     public void readFromChannel(SelectionKey key) {
         ByteBuffer buffer = (ByteBuffer) key.attachment();
 
@@ -160,6 +188,12 @@ public class NetThread extends Thread {
         }
     }
 
+    /**
+     * Enqueue new request.
+     *
+     * @param buffer buffer containing the request.
+     * @param key    key representing the connection over which the request was sent.
+     */
     public void enqueueRequest(ByteBuffer buffer, SelectionKey key) {
         Request req = new Request(buffer, key);
 

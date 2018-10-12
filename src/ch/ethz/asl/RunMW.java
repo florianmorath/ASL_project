@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 public class RunMW {
 
     /**
-     * IP-address to listen on by net-thread (memtier client connections).
+     * IP-address of the net-thread (memtier client connections).
      */
     static String myIp = null;
 
