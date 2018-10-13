@@ -50,7 +50,7 @@ public class WorkerThread extends Thread {
 
 
     /**
-     * For each memcached server, create a socketChannel and try to connect to it. We setup a blocking channel to each.
+     * For each memcached server, create a socketChannel and try to connect it to the remote server. We setup a blocking channel to each.
      *
      * @param mcAddresses memcached servers.
      */
@@ -176,7 +176,7 @@ public class WorkerThread extends Thread {
     }
 
     /**
-     * Process Get request. If we are in non sharded mode, no mather if Get or Multiget, the request is forwarded to
+     * Process Get request. If we are in non sharded mode, no matter if Get or Multiget, the request is forwarded to
      * one server (round robin) and the response will be forwarded to the client. If we are in sharded mode, the
      * request is split evenly, and distributed among the memcached servers.
      *
@@ -304,10 +304,9 @@ public class WorkerThread extends Thread {
      * @return number of keys the next server should handle.
      */
     public static int getKeyCount(int index, int numKeys, int serverCount) {
+
         int keyCount = 0;
-        int currentIndex = index;
-        while (currentIndex < numKeys) {
-            currentIndex += serverCount;
+        for (int i = index; i < numKeys; i += serverCount) {
             keyCount++;
         }
         return keyCount;
