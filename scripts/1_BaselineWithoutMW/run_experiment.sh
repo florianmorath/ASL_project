@@ -24,13 +24,16 @@ function start_memcached_servers {
 function populate_memcached_servers {
     echo "start populating memcached servers ..."
 
-    local test_time=10;
+    local test_time=20; # ca. 1k ops per second (we have 10k keys)
     local ratio="1:0"; # set requests
     local threads=1; # thread count (CT)
     local clients=1; # virtual clients per thread (VC)
 
-    ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram --clients=$clients --threads=$threads --test-time=$test_time --data-size=4096"    
-    
+    # note: use &> /dev/null to not write output to console 
+    ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port \
+    --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+    --clients=$clients --threads=$threads --test-time=$test_time --data-size=4096"  
+
     # wait a little (cool down)
     sleep 5
 
@@ -38,7 +41,11 @@ function populate_memcached_servers {
 }
 
 function kill_instances {
+    echo "start killing memcached instances ..."
+
     ssh $server1_dns "sudo service memcached stop; sudo pkill -f memcached" 
+
+    echo "start killing memcached instances finished"
 }
 
 
@@ -46,6 +53,38 @@ function kill_instances {
 function run_baseline_without_mw {
     echo "run baseline_without_mw ..."
 
+    # log folder setup
+    local timestamp=$(date +%Y-%m-%d_%Hh%M)
+    mkdir -p "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
+
+    # params
+    local test_time=15; 
+    local ratio="0:1"; 
+    local threads=1; # thread count (CT)
+    local clients=1; # virtual clients per thread (VC)
+
+    # start experiment
+    ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port \
+    --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+    --clients=$clients --threads=$threads --test-time=$test_time --data-size=4096 &> client.log &" &     
+    
+    # cpu, disk, net usage statistics
+    ssh $client1_dns "dstat -c -d -n -T 1 $test_time > dstat_client.log &" &
+    ssh $server1_dns "dstat -c -d -n -T 1 $test_time > dstat_server.log &" &
+
+    # wait until experiments are finished
+    sleep $(($test_time + 5))
+
+    # copy data to local file system
+    echo "copy collected data to local FS ..."
+    scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
+    scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
+    scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
+
+    ssh $client1_dns "rm *.log"
+    ssh $server1_dns "rm *.log"
+
+    echo "run baseline_without_mw finished"
 } 
 
 
@@ -58,6 +97,8 @@ if [ "${1}" == "run" ]; then
    populate_memcached_servers
 
    # run experiment
+   run_baseline_without_mw
+
    # kill instances
    kill_instances
 fi
