@@ -61,7 +61,7 @@ function run_baseline_without_mw_one_server {
 
     # log folder setup
     local timestamp=$(date +%Y-%m-%d_%Hh%M)
-    mkdir -p "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
+    mkdir -p "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
 
     # params
     local test_time=10;
@@ -96,9 +96,9 @@ function run_baseline_without_mw_one_server {
 
             # copy data to local file system and delete on vm
             echo "copy collected data to local FS ..."
-            scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
-            scp $client2_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
-            scp $client3_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
+            scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
+            scp $client2_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
+            scp $client3_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
             ssh $client1_dns "rm *.json"
             ssh $client2_dns "rm *.json"
             ssh $client3_dns "rm *.json"

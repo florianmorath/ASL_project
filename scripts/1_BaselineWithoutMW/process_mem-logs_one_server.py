@@ -14,7 +14,7 @@ import numpy as np
 
 """
 Args: path to directory containing log-files
- 
+
 """
 if __name__ == "__main__":
 
@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # create dir to put processed csv files into (if does not yet exist)
     date = os.path.basename(log_dir)
-    os.makedirs('cvs_processed/one_server/{}'.format(date), exist_ok=True)
+    os.makedirs('processed_data/one_server/{}'.format(date), exist_ok=True)
 
     # experiment config
     # TODO: run script can write config params into separate file from which they can be read 
@@ -33,8 +33,8 @@ if __name__ == "__main__":
     rep_list=[1,2]
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
-    tp_file = open("cvs_processed/one_server/{}/one_server_mem_tp.csv".format(date), "w") # throughput
-    rt_file  = open("cvs_processed/one_server/{}/one_server_mem_rt.csv".format(date), "w") # response-time
+    tp_file = open("processed_data/one_server/{}/one_server_mem_tp.csv".format(date), "w") # throughput
+    rt_file  = open("processed_data/one_server/{}/one_server_mem_rt.csv".format(date), "w") # response-time
     tp_file.write("client,write_tp_mean,write_tp_std,read_tp_mean,read_tp_std\n")
     rt_file.write("client,write_rt_mean,write_rt_std,read_rt_mean,read_rt_std\n")
 
