@@ -32,7 +32,7 @@ function populate_memcached_servers {
     # note: use &> /dev/null to not write output to console 
     ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port \
     --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-    --clients=$clients --threads=$threads --test-time=$test_time --data-size=4096"  
+    --clients=$clients --threads=$threads --test-time=$test_time --data-size=4096 &> /dev/null "  
 
     # wait a little (cool down)
     sleep 5
@@ -58,7 +58,7 @@ function run_baseline_without_mw {
     mkdir -p "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
 
     # params
-    local test_time=15; 
+    local test_time=20; 
     local ratio="0:1"; 
     local threads=1; # thread count (CT)
     local clients=1; # virtual clients per thread (VC)
@@ -66,11 +66,11 @@ function run_baseline_without_mw {
     # start experiment
     ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port \
     --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-    --clients=$clients --threads=$threads --test-time=$test_time --data-size=4096 &> client.log &" &     
+    --clients=$clients --threads=$threads --test-time=$test_time --data-size=4096 --client-stats=client &> /dev/null &" &     
     
-    # cpu, disk, net usage statistics
-    ssh $client1_dns "dstat -c -d -n -T 1 $test_time > dstat_client.log &" &
-    ssh $server1_dns "dstat -c -d -n -T 1 $test_time > dstat_server.log &" &
+    # cpu, net usage statistics
+    ssh $client1_dns "dstat -c -n --output dstat_client.csv -T 1 $test_time &> /dev/null &" &
+    ssh $server1_dns "dstat -c -n --output dstat_server.csv -T 1 $test_time &> /dev/null &" &
 
     # wait until experiments are finished
     sleep $(($test_time + 5))
@@ -81,8 +81,8 @@ function run_baseline_without_mw {
     scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
     scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/$timestamp"
 
-    ssh $client1_dns "rm *.log"
-    ssh $server1_dns "rm *.log"
+    ssh $client1_dns "rm *.csv"
+    ssh $server1_dns "rm *.csv"
 
     echo "run baseline_without_mw finished"
 } 
