@@ -108,3 +108,12 @@ build/
 
 # macOS
 .DS_Store
+
+# Visual Studio Code - https://code.visualstudio.com/
+.settings/
+.vscode/
+tsconfig.json
+jsconfig.json
+
+# ASL project
+logs/
