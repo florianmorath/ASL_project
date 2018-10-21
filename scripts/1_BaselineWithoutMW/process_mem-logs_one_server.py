@@ -49,22 +49,38 @@ if __name__ == "__main__":
         write_rt_list = []
         read_rt_list = []
 
-        files = glob("{}/client*_ratio_*_vc_{}_*.json".format(log_dir, vc))
-        for f in files:
-            js = json.load(open(f))
+        for rep in rep_list:
 
-            # check that no missed occured
-            if (js["ALL STATS"]["Gets"]["Misses/sec"] != 0.0 or js["ALL STATS"]["Sets"]["Misses/sec"] != 0.0 ):
-                print("warning: get misses in {}".format(f))
+            # want the sum of the tp and the mean of the rt
+            temp_write_tp_list = []
+            temp_read_tp_list = []
+            temp_write_rt_list = []
+            temp_read_rt_list = []
 
-            if js["configuration"]["ratio"] == "1:0":
-                # set requests
-                write_tp_list.append(js["ALL STATS"]["Sets"]["Ops/sec"])
-                write_rt_list.append(js["ALL STATS"]["Sets"]["Latency"])
-            elif js["configuration"]["ratio"] == "0:1":
-                # read requests
-                read_tp_list.append(js["ALL STATS"]["Gets"]["Ops/sec"])
-                read_rt_list.append(js["ALL STATS"]["Gets"]["Latency"])
+            files = glob("{}/client*_ratio_*_vc_{}_rep_{}.json".format(log_dir, vc, rep))
+            assert len(files) == 6
+            for f in files:
+                js = json.load(open(f))
+
+                # check that no missed occured
+                if (js["ALL STATS"]["Gets"]["Misses/sec"] != 0.0 or js["ALL STATS"]["Sets"]["Misses/sec"] != 0.0 ):
+                    print("warning: get or set misses in {}".format(f))
+
+                if js["configuration"]["ratio"] == "1:0":
+                    # set requests
+                    temp_write_tp_list.append(js["ALL STATS"]["Sets"]["Ops/sec"])
+                    temp_write_rt_list.append(js["ALL STATS"]["Sets"]["Latency"])
+                elif js["configuration"]["ratio"] == "0:1":
+                    # read requests
+                    temp_read_tp_list.append(js["ALL STATS"]["Gets"]["Ops/sec"])
+                    temp_read_rt_list.append(js["ALL STATS"]["Gets"]["Latency"])
+            
+            # put sum for tp and mean for rt into final lists
+            write_tp_list.append(np.sum(temp_write_tp_list))
+            read_tp_list.append(np.sum(temp_read_tp_list))
+            write_rt_list.append(np.mean(temp_write_rt_list))
+            read_rt_list.append(np.mean(temp_read_rt_list))
+
         
         tp_file.write('{},{},{},{},{}\n'.format(2*3*vc, np.mean(write_tp_list), np.std(write_tp_list), np.mean(read_tp_list), np.std(read_tp_list)))
         rt_file.write('{},{},{},{},{}\n'.format(2*3*vc, np.mean(write_rt_list), np.std(write_rt_list), np.mean(read_rt_list), np.std(read_rt_list)))

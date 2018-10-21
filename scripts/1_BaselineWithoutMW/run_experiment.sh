@@ -78,6 +78,7 @@ function run_baseline_without_mw_one_server {
 
                     file_ext="ratio_${ratio}_vc_${vc}_rep_${rep}"
 
+                    # memtier
                     ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port \
                     --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
                     --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_${file_ext}.json &> /dev/null &" &  
@@ -89,6 +90,10 @@ function run_baseline_without_mw_one_server {
                     ssh $client3_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port \
                     --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
                     --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_${file_ext}.json &> /dev/null &" &   
+
+                    # dstat: cpu, net usage statistics           
+                    ssh $client1_dns "dstat -c -n --output dstat_client.csv -T 1 $test_time &> /dev/null &" &
+                    ssh $server1_dns "dstat -c -n --output dstat_server.csv -T 1 $test_time &> /dev/null &" &
 
                     # wait until experiments are finished
                     sleep $(($test_time + 5))
@@ -106,10 +111,6 @@ function run_baseline_without_mw_one_server {
         done
     done
             
-    # cpu, net usage statistics
-    #ssh $client1_dns "dstat -c -n --output dstat_client.csv -T 1 $test_time &> /dev/null &" &
-    #ssh $server1_dns "dstat -c -n --output dstat_server.csv -T 1 $test_time &> /dev/null &" &
-
     echo "run baseline_without_mw finished"
 } 
 
