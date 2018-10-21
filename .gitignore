@@ -115,5 +115,9 @@ build/
 tsconfig.json
 jsconfig.json
 
+### JupyterNotebook ###
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
 # ASL project
 logs/
