@@ -30,7 +30,7 @@ function start_memcached_servers {
 function populate_memcached_servers {
     echo "start populating memcached servers ..."
 
-    local test_time=20; # ca. 1k ops per second (we have 10k keys)
+    local test_time=60; # ca. 1k ops per second (we have 10k keys)
     local ratio="1:0"; # set requests
     local threads=1; # thread count (CT)
     local clients=1; # virtual clients per thread (VC)
@@ -64,11 +64,11 @@ function run_baseline_without_mw_one_server {
     mkdir -p "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
 
     # params
-    local test_time=10;
-    local threads=1 # thread count (CT)
-    local ratio_list=(0:1 1:0)
-    local vc_list=(2 4) # virtual clients per thread (VC)
-    local rep_list=(1 2)
+    local test_time=90;
+    local threads=2 # thread count (CT)
+    local ratio_list=(1:0 0:1)
+    local vc_list=(2 4 8 16 24 32 40 48 56) # virtual clients per thread (VC)
+    local rep_list=(1 2 3)
 
     for vc in "${vc_list[@]}"; do
         for ratio in "${ratio_list[@]}"; do
@@ -92,8 +92,8 @@ function run_baseline_without_mw_one_server {
                     --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_${file_ext}.json &> /dev/null &" &   
 
                     # dstat: cpu, net usage statistics           
-                    ssh $client1_dns "dstat -c -n --output dstat_client.csv -T 1 $test_time &> /dev/null &" &
-                    ssh $server1_dns "dstat -c -n --output dstat_server.csv -T 1 $test_time &> /dev/null &" &
+                    ssh $client1_dns "dstat -c -n --output dstat_client1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
+                    ssh $server1_dns "dstat -c -n --output dstat_server1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
 
                     # wait until experiments are finished
                     sleep $(($test_time + 5))
@@ -104,9 +104,14 @@ function run_baseline_without_mw_one_server {
             scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
             scp $client2_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
             scp $client3_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
-            ssh $client1_dns "rm *.json"
+
+            scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
+            scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
+
+            ssh $client1_dns "rm *.json; rm *.csv"
             ssh $client2_dns "rm *.json"
             ssh $client3_dns "rm *.json"
+            ssh $server1_dns "rm *.csv"
 
         done
     done
