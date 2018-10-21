@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
     # experiment config
     # TODO: run script can write config params into separate file from which they can be read 
-    vc_list=[2,4] 
-    rep_list=[1,2]
+    vc_list=[2,4,8,16,24,32,40,48,56] 
+    rep_list=[1,2,3]
 
     ratio_list=['0:1','1:0']
     operations_list=['cpu','netsend','netrecv']
