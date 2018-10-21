@@ -3,6 +3,10 @@
 """ 
 Process log files to csv files such that extracted values can easily be plotted.
 
+output:
+- one_server_mem_tp.csv: thorughput for read and write loads
+- one_server_mem_rt.csv: response-time for read and write loads
+
 """
 
 

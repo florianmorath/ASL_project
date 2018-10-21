@@ -122,8 +122,11 @@ if [ "${1}" == "run" ]; then
    # populate memcached servers with key-value pairs
    populate_memcached_servers
 
-   # run experiment
+   # run experiment (one server)
    run_baseline_without_mw_one_server
+
+   # run experiment (two servers) 
+   # TODO
 
    # kill instances
    kill_instances
