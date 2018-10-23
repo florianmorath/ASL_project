@@ -7,8 +7,13 @@ sh run_experiment.sh run
 
 ### 2. process logs to csvs
 ```
+# one server
 python3 process_mem-logs_one_server.py <path-to-directory-to-log-files>
 python3 process_dstat-logs_one_server.py <path-to-directory-to-log-files>
+
+# two servers
+python3 process_mem-logs_two_servers.py <path-to-directory-to-log-files>
+python3 process_dstat-logs_two_servers.py <path-to-directory-to-log-files>
 ```
 
 ### 3. create plots (jupyter notebook)
