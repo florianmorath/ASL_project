@@ -59,7 +59,7 @@ if __name__ == "__main__":
                         elif operation == 'cpu':
                             op_list.append(np.mean(df['idl'][10:-10].map(lambda x: 100 - x)))
                             
-                    f.write("{},{},{}\n".format(vc, np.mean(op_list), np.std(op_list)))
+                    f.write("{},{},{}\n".format(2*3*vc, np.mean(op_list), np.std(op_list)))
 
                         
                           
