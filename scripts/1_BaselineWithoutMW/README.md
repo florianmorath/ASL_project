@@ -18,6 +18,11 @@ python3 process_dstat-logs_two_servers.py <path-to-directory-to-log-files>
 
 ### 3. create plots (jupyter notebook)
 ```
-plot_mem-logs_one_srver.ipynb
+# one server
+plot_mem-logs_one_server.ipynb
 plot_dstat-logs_one_server.ipynb
+
+# two servers
+plot_mem-logs_two_servers.ipynb
+plot_dstat-logs_two_servers.ipynb
 ```
