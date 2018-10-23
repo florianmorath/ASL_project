@@ -53,7 +53,7 @@ if __name__ == "__main__":
                         f_log = open("{}/dstat_{}1_ratio_{}_vc_{}_rep_{}.csv".format(log_dir, vm, ratio, vc, rep))
                         df = pd.read_csv(f_log, header=5)
                         if operation == 'netsend':
-                            op_list.append(np.mean(df['send'][10:-10])) # TODO: skip first and last x values (start-up and cool-down phase)
+                            op_list.append(np.mean(df['send'][10:-10])) # skip first and last x values (start-up and cool-down phase)
                         elif operation == 'netrecv':
                             op_list.append(np.mean(df['recv'][10:-10]))
                         elif operation == 'cpu':
