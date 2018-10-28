@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
     <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
+        <Console name="console_appender" target="SYSTEM_OUT">
             <PatternLayout pattern="[%t] %-5level %logger{36} - %msg%n"/>
         </Console>
-        <File name="requests" fileName="mw.csv" immediateFlush="true">
-            <PatternLayout pattern="[%t] %-5level %logger{36} - %msg%n"/>
+        <File name="request_appender" fileName="mw.csv" immediateFlush="false">
+            <PatternLayout pattern="%m%n" header="requestType,timeFirstByte,timeEnqueued,timeDequeued,timememcachedSent,timememcachedReceived,timeCompleted,queueLength%n"/>
         </File>
     </Appenders>
     <Loggers>
         <Root level="debug">
-            <AppenderRef ref="Console"/>
+            <AppenderRef ref="console_appender"/>
         </Root>
-        <logger name="request_logger" level="debug" additivity="false">
-            <appender-ref ref="requests" />
-        </logger>
+        <Logger name="request_logger" level="debug" additivity="false">
+            <AppenderRef ref="request_appender" />
+        </Logger>
     </Loggers>
 </Configuration>
+

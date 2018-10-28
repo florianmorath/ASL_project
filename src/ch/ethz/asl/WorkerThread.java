@@ -98,6 +98,8 @@ public class WorkerThread extends Thread {
             try {
                 // dequeue request (blocks until a request becomes available)
                 Request request = requestQueue.take();
+                request.queueLength = requestQueue.size() + 1;
+                request.timeDequeued = System.nanoTime();
 
                 // handle request (send to memcached servers according to project specification)
                 if (request.type == Request.Type.SET) {
@@ -110,6 +112,9 @@ public class WorkerThread extends Thread {
                     clientChannel.write(ByteBuffer.wrap("ERROR\r\n".getBytes()));
                 }
 
+                // log instrumentation data
+                request.timeCompleted = System.nanoTime();
+                request.writeLogLine();
 
             } catch (Exception e) {
                 logger.error("Worker-thread failed. Thread id = " + String.valueOf(this.getId()));
@@ -134,6 +139,7 @@ public class WorkerThread extends Thread {
         request.buffer.flip(); // sets limit to position and position to 0 (read mode)
 
         // send request to each server
+        request.timeMemcachedSent = System.nanoTime();
         for (SocketChannel socketChannel : socketChannels) {
             socketChannel.write(request.buffer);
             request.buffer.rewind(); // make buffer readable again (set position to 0)
@@ -157,6 +163,8 @@ public class WorkerThread extends Thread {
                 errorMessages.add(response);
             }
         }
+
+        request.timeMemcachedReceived = System.nanoTime();
 
         // respond to client
         request.buffer.clear(); // allows client to send new request
@@ -196,12 +204,14 @@ public class WorkerThread extends Thread {
             SocketChannel socketChannel = socketChannels.get(lastServerIndex);
 
             // forward request to chosen server
+            request.timeMemcachedSent = System.nanoTime();
             request.buffer.flip();
             socketChannel.write(request.buffer);
 
             // read response
             responseBuffer.clear();
             readDataFromSocket(socketChannel, responseBuffer);
+            request.timeMemcachedReceived = System.nanoTime();
 
             // send response to client
             SocketChannel clientSocketChannel = (SocketChannel) request.key.channel();
@@ -248,6 +258,7 @@ public class WorkerThread extends Thread {
                     usedServers[index] = lastServerIndex;
 
                     // send request
+                    request.timeMemcachedSent = System.nanoTime();
                     responseBuffer.flip();
                     socketChannel.write(responseBuffer);
 
@@ -277,6 +288,8 @@ public class WorkerThread extends Thread {
                     }
                 }
             }
+
+            request.timeMemcachedReceived = System.nanoTime();
 
             // send response to client
             SocketChannel clientChannel = (SocketChannel) request.key.channel();

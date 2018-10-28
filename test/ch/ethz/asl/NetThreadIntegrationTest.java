@@ -39,7 +39,7 @@ class NetThreadIntegrationTest {
     void testEnqueue() throws InterruptedException {
         ByteBuffer buf = ByteBuffer.allocate(1024);
         buf.put("get memtier-1234\r\n".getBytes());
-        net.enqueueRequest(buf, null);
+        net.enqueueRequest(buf, null, 111);
 
         assertTrue(net.requestQueue.size() == 1);
         assertTrue(net.requestQueue.take().buffer == buf);

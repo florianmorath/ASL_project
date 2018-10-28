@@ -21,7 +21,7 @@ public class Request {
 
 
     private static final Logger logger = LogManager.getLogger(Request.class.getName());
-    private static final Logger request_logger = LogManager.getLogger("request_logger");
+    private static final Logger requestLogger = LogManager.getLogger("request_logger");
 
     /**
      * A request is either a Get (includes Multiget), a Set or an invalid request.
@@ -47,6 +47,17 @@ public class Request {
      * Request type.
      */
     public Type type = Type.INVALID;
+
+    /**
+     *  Instrumentation values
+     */
+    public long timeFirstByte;
+    public long timeEnqueued;
+    public long timeDequeued;
+    public long timeMemcachedSent;
+    public long timeMemcachedReceived;
+    public long timeCompleted;
+    public int queueLength;
 
 
     public Request(ByteBuffer buffer, SelectionKey key) {
@@ -108,6 +119,11 @@ public class Request {
         int lastPosition = buffer.position();
 
         return (buffer.get(lastPosition - 1) == slash_n && buffer.get(lastPosition - 2) == slash_r);
+    }
+
+    public void writeLogLine() {
+        requestLogger.debug(String.format("%s,%d,%d,%d,%d,%d,%d,%d", type, timeFirstByte, timeEnqueued, timeDequeued,
+                timeMemcachedSent, timeMemcachedReceived, timeCompleted, queueLength));
     }
 
 }

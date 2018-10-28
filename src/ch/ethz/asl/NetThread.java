@@ -150,6 +150,9 @@ public class NetThread extends Thread {
      * @param key the selection key returned by the selector.
      */
     public void readFromChannel(SelectionKey key) {
+
+        long firstReadTime = System.nanoTime();
+
         ByteBuffer buffer = (ByteBuffer) key.attachment();
 
         SocketChannel channel = (SocketChannel) key.channel();
@@ -184,7 +187,7 @@ public class NetThread extends Thread {
         // check if whole request is in the buffer
         if (Request.endOfLineExists(buffer)) {
             // create and enqueue Request
-            enqueueRequest(buffer, key);
+            enqueueRequest(buffer, key, firstReadTime);
         } else {
             logger.info("Did not receive whole request yet.");
         }
@@ -192,12 +195,14 @@ public class NetThread extends Thread {
 
     /**
      * Enqueue new request.
-     *
      * @param buffer buffer containing the request.
      * @param key    key representing the connection over which the request was sent.
+     * @param firstReadTime timestamp where first byte of request was read
      */
-    public void enqueueRequest(ByteBuffer buffer, SelectionKey key) {
+    public void enqueueRequest(ByteBuffer buffer, SelectionKey key, long firstReadTime) {
         Request req = new Request(buffer, key);
+        req.timeFirstByte = firstReadTime;
+        req.timeEnqueued = System.nanoTime();
 
         try {
             requestQueue.put(req);
