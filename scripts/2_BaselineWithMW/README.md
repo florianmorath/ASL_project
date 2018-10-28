@@ -7,6 +7,8 @@ sh run_experiment.sh run
 
 ### 2. process logs to csvs
 ```
+# one mw
+python3 process_mw-logs_one_mw.py <path-to-directory-to-log-files>
 
 ```
 
