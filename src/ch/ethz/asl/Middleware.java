@@ -34,7 +34,6 @@ public class Middleware {
         startNetThread(myIp, myPort);
         startWorkerThreads(mcAddresses, numThreadsPTP, readSharded);
 
-        // TODO: implement shutdown hook
     }
 
     private void startNetThread(String myIp, int myPort) {

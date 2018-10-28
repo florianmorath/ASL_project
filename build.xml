@@ -1,42 +1,59 @@
-<project name="asl-fall16-project" default="jar" basedir=".">
-  <description>
-    ANT Build File for ASL Fall 2017 Project
-  </description>
-  <!-- set global properties for this build -->
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="asl-fall16-project" basedir="." default="jar">
+  <description>ANT Build File for ASL Fall 2017 Project</description>
 
-  <property name="nethzid" value="fmorath"/>
+  <!-- Define global properties for this build -->
+  <property name="nethz-id" value="fmorath" />
+  <property name="jarfile" value="middleware-fmorath.jar"/>
+  <property name="build" location="build" />
+  <property name="dist" location="dist" />
+  <property name="lib" location="lib" />
+  <property name="src" location="src" />
 
-  <property name="src" location="src"/>
-  <property name="build" location="build"/>
-  <property name="dist" location="dist"/>
+  <!-- Define classpath for this build -->
+  <path id="classpath">
+    <fileset dir="${lib}">
+      <include name="log4j-core-2.11.1.jar"/>
+      <include name="log4j-api-2.11.1.jar"/>
+  </fileset>
 
-  <target name="init">
+  </path>
+
+  <target name="init" description="Initialization">
     <tstamp/>
     <mkdir dir="${build}"/>
+    <mkdir dir="${dist}"/>
   </target>
 
   <target name="compile" depends="init" description="compile the source">
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}" includeantruntime="false"  />
+    <javac srcdir="${src}" destdir="${build}" classpathref="classpath" includeantruntime="false" />
   </target>
 
   <target name="jar" depends="compile" description="generate the distribution">
-    <!-- Create the distribution directory -->
-    <mkdir dir="${dist}"/>
-    <!-- Put everything in ${build} into the jar file -->
-    <jar jarfile="${dist}/middleware-${nethzid}.jar" basedir="${build}" compress="true">
-      <fileset dir="${src}" includes="**/*.java"/>
+    <!-- Put everything in ${build} and ${lib} into the jar file -->
+
+    <!-- Manifest classpath -->
+    <manifestclasspath property="manifest.classpath" jarfile="${jarfile}">
+      <classpath refid="classpath"/>
+    </manifestclasspath>
+
+    <jar destfile="${dist}/middleware-${nethz-id}.jar" basedir="${build}">
       <manifest>
+        <attribute name="Class-Path" value="${manifest.classpath}" />
         <attribute name="Main-Class" value="ch.ethz.asl.RunMW"/>
       </manifest>
+      <zipgroupfileset dir="${lib}" includes="**/*.jar" />
+      <fileset file="log4j2.xml" />
     </jar>
   </target>
 
-  <target name="clean"
-        description="clean up">
+
+  <target name="clean" description="clean up">
     <!-- Delete the ${build} and ${dist} directory trees -->
     <delete dir="${build}"/>
     <delete dir="${dist}"/>
   </target>
 </project>
+
 
