@@ -1,7 +1,6 @@
 package ch.ethz.asl;
 
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Logger;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.Selector;
 import java.util.Iterator;
@@ -9,6 +8,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.net.InetSocketAddress;
 import java.io.IOException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -19,7 +21,7 @@ import java.io.IOException;
  */
 public class NetThread extends Thread {
 
-    private static final Logger logger = Logger.getLogger(NetThread.class.getName());
+    private static final Logger logger = LogManager.getLogger(NetThread.class.getName());
 
     /**
      * The selector is used to handle multiple client connections simultaneously by a single thread.
@@ -63,7 +65,7 @@ public class NetThread extends Thread {
             // register the channel for accept events
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
         } catch (IOException ex) {
-            logger.warning("Error during Connection setup.");
+            logger.error("Error during Connection setup.");
             ex.printStackTrace();
         }
     }
@@ -86,7 +88,7 @@ public class NetThread extends Thread {
                 // blocks until at least one channel is ready for I/O operations
                 selector.select();
             } catch (IOException ex) {
-                logger.warning("Selected keys could not be updated.");
+                logger.error("Selected keys could not be updated.");
                 ex.printStackTrace();
             }
 
@@ -104,7 +106,7 @@ public class NetThread extends Thread {
                     readFromChannel(key);
 
                 } else {
-                    logger.warning("Invalid SelectionKey");
+                    logger.error("Invalid SelectionKey");
                 }
 
                 iterator.remove();
@@ -133,11 +135,11 @@ public class NetThread extends Thread {
             logger.info("Client connection accepted and added to the selector.");
 
         } catch (ClosedChannelException ex) {
-            logger.warning("Channel closed.");
+            logger.error("Channel closed.");
             ex.printStackTrace();
 
         } catch (IOException ex) {
-            logger.warning("Error while accepting client connection");
+            logger.error("Error while accepting client connection");
             ex.printStackTrace();
         }
     }
@@ -161,7 +163,7 @@ public class NetThread extends Thread {
 
 
         } catch (IOException ex) {
-            logger.warning("Error while reading data from client");
+            logger.error("Error while reading data from client");
             ex.printStackTrace();
         }
 
@@ -171,7 +173,7 @@ public class NetThread extends Thread {
             try {
                 key.channel().close();
             } catch (IOException ex) {
-                logger.warning("Could not close channel after client request connection closure.");
+                logger.error("Could not close channel after client request connection closure.");
                 ex.printStackTrace();
             }
             // Cancel registration of the channel to the selector
@@ -201,7 +203,7 @@ public class NetThread extends Thread {
             requestQueue.put(req);
             logger.info("request enqueued");
         } catch (Exception ex) {
-            logger.warning("Could not enqueue request.");
+            logger.error("Could not enqueue request.");
             ex.printStackTrace();
         }
 

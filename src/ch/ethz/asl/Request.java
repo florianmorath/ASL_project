@@ -3,7 +3,9 @@ package ch.ethz.asl;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
-import java.util.logging.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Represents a requests from a Memtier client.
@@ -18,7 +20,8 @@ import java.util.logging.Logger;
 public class Request {
 
 
-    private static final Logger logger = Logger.getLogger(Request.class.getName());
+    private static final Logger logger = LogManager.getLogger(Request.class.getName());
+    private static final Logger request_logger = LogManager.getLogger("request_logger");
 
     /**
      * A request is either a Get (includes Multiget), a Set or an invalid request.
@@ -68,7 +71,7 @@ public class Request {
         if (!Request.endOfLineExists(buffer)) {
             // incomplete message
             type = Type.INVALID;
-            logger.warning("Incomplete request warning. Missing the two end of line bytes.");
+            logger.error("Incomplete request warning. Missing the two end of line bytes.");
         }
 
         // check and assign type
@@ -80,9 +83,9 @@ public class Request {
             logger.info("Detected Set request");
             type = Type.SET;
         } else {
-            logger.warning("Request invalid");
+            logger.error("Request invalid");
             type = Type.INVALID;
-            logger.warning("Request does not start with set or get command");
+            logger.error("Request does not start with set or get command");
         }
 
     }

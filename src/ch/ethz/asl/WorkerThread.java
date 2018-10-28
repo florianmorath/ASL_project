@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A worker-thread will connect to the given memcached servers and process requests from the request queue of the
@@ -19,7 +21,7 @@ import java.util.logging.Logger;
  */
 public class WorkerThread extends Thread {
 
-    private static final Logger logger = Logger.getLogger(WorkerThread.class.getName());
+    private static final Logger logger = LogManager.getLogger(WorkerThread.class.getName());
 
     private LinkedBlockingQueue<Request> requestQueue;
     public boolean readSharded;
@@ -70,7 +72,7 @@ public class WorkerThread extends Thread {
                 logger.info("Worker thread " + String.valueOf(this.getId()) + " connected to " +
                         serverConnection.getRemoteAddress().toString() + " (" + serverConnection.isConnected() + ")");
             } catch (IOException ex) {
-                logger.warning("Worker-thread " + this.getId() + " failed connection setup.");
+                logger.error("Worker-thread " + this.getId() + " failed connection setup.");
                 ex.printStackTrace();
             }
 
@@ -110,7 +112,7 @@ public class WorkerThread extends Thread {
 
 
             } catch (Exception e) {
-                logger.warning("Worker-thread failed. Thread id = " + String.valueOf(this.getId()));
+                logger.error("Worker-thread failed. Thread id = " + String.valueOf(this.getId()));
                 e.printStackTrace();
             }
 

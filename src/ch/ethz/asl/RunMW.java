@@ -1,7 +1,8 @@
 package ch.ethz.asl;
 
 import java.util.*;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Entry point of application. Parses the arguments and starts the Middleware.
@@ -33,7 +34,8 @@ public class RunMW {
      */
     static boolean readSharded = false;
 
-    private static final Logger logger = Logger.getLogger(RunMW.class.getName());
+
+    private static final Logger logger = LogManager.getLogger(RunMW.class.getName());
 
 
     public static void main(String[] args) throws Exception {
