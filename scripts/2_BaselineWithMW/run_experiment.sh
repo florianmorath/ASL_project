@@ -75,6 +75,7 @@ function compile_uplaod_mw {
 
     # upload
     scp "$HOME/Desktop/ASL_project/dist/middleware-fmorath.jar" $mw1_dns:
+    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mw_data.py" $mw1_dns:
 
     echo "start compile_uplaod_mw finished"
 }
@@ -105,8 +106,8 @@ function run_baseline_with_one_mw {
 
                         file_ext="ratio_${ratio}_vc_${vc}_worker_${worker}_rep_${rep}"
 
-                        # middleware
-                        ssh $mw1_dns "java -jar middleware-fmorath.jar -l $mw1_ip -p $mw1_port -m ${server1_ip}:${server1_port} -t $worker -s false &> mw1_${file_ext}.log &" &
+                        # middleware 
+                        ssh $mw1_dns "java -jar middleware-fmorath.jar -l $mw1_ip -p $mw1_port -m ${server1_ip}:${server1_port} -t $worker -s false &> /dev/null &" &
                         sleep 2
 
                         # memtier
@@ -116,7 +117,7 @@ function run_baseline_with_one_mw {
 
                         # dstat: cpu, net usage statistics           
                         ssh $client1_dns "dstat -c -n --output dstat_client1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
-                        ssh $mw1_dns "dstat -c -n --output dstat_mw1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
+                        ssh $mw1_dns "dstat -c -n -d --output dstat_mw1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
                         ssh $server1_dns "dstat -c -n --output dstat_server1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
 
                         # wait until experiments are finished
@@ -124,21 +125,29 @@ function run_baseline_with_one_mw {
 
                         # kill middleware
                         ssh $mw1_dns "sudo pkill -f middleware"
+                        echo "killed mw"
+                        sleep 5
+
+                        # run python script to aggregate data
+                        echo "aggregate mw data ..."
+                        ssh $mw1_dns "python3 aggregate_mw_data.py mw.csv mw1_${file_ext}.csv"
+                                    
+                                
+                        # copy data to local file system and delete on vm
+                        echo "copy collected data to local FS ..."
+                        scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
+                        scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
+
+                        scp $mw1_dns:mw1* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
+                        scp $mw1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
+
+                        scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
+
+                        ssh $client1_dns "rm *.json; rm *.csv"
+                        ssh $mw1_dns "rm *.csv"
+                        ssh $server1_dns "rm *.csv"
                 done
 
-                # copy data to local file system and delete on vm
-                echo "copy collected data to local FS ..."
-                scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
-                scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
-
-                scp $mw1_dns:mw* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
-                scp $mw1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
-
-                scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
-
-                ssh $client1_dns "rm *.json; rm *.csv"
-                ssh $mw1_dns "rm *.log; rm *.csv"
-                ssh $server1_dns "rm *.csv"
             done
         done
     done
