@@ -58,11 +58,11 @@ if __name__ == "__main__":
 
                     if df['requestType'].iloc[0] == 'SET':
                         write_tp_list.append(df[' totalRequests'].iloc[0] / 5) # divide by test-time
-                        write_rt_list.append(df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0] + df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0]) 
+                        write_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0] + df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6) 
                     
                     if df['requestType'].iloc[0]  == 'GET':
                         read_tp_list.append(df[' totalRequests'].iloc[0] / 5) # divide by test-time
-                        read_rt_list.append(df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0]+ df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])
+                        read_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0]+ df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6)
 
             tp_file.write('{},{},{},{},{},{}\n'.format(vc, worker, np.mean(write_tp_list), np.std(write_tp_list), np.mean(read_tp_list), np.std(read_tp_list)))
             rt_file.write('{},{},{},{},{},{}\n'.format(vc, worker, np.mean(write_rt_list), np.std(write_rt_list), np.mean(read_rt_list), np.std(read_rt_list)))

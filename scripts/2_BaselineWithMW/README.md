@@ -14,5 +14,8 @@ python3 process_mw-logs_one_mw.py <path-to-directory-to-log-files>
 
 ### 3. create plots (jupyter notebook)
 ```
+# one mw
+plot_mw-logs_one_mw.ipynb
+
 
 ```
