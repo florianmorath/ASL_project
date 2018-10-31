@@ -4,8 +4,10 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- one_mw_tp.csv: thorughput for read and write loads
-- one_mw_rt.csv: response-time for read and write loads
+- one_mw_tp.csv: thorughput (for read and write loads)
+- one_mw_rt.csv: response-time (for read and write loads)
+- one_mw_rt_breakdown.csv: breakdown of different response-times in MW (for read and write loads)
+- one_mw_queuelength.csv: queue-length (for read and write loads)
 """
 
 import os
@@ -36,18 +38,40 @@ if __name__ == "__main__":
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
     tp_file = open("processed_data/one_mw/{}/one_mw_tp.csv".format(date), "w") # throughput
-    rt_file = open("processed_data/one_mw/{}/one_mw_rt.csv".format(date), "w") # response-time
     tp_file.write("client,worker,write_tp_mean,write_tp_std,read_tp_mean,read_tp_std\n")
+    
+    rt_file = open("processed_data/one_mw/{}/one_mw_rt.csv".format(date), "w") # response-time
     rt_file.write("client,worker,write_rt_mean,write_rt_std,read_rt_mean,read_rt_std\n")
 
+    queue_file = open("processed_data/one_mw/{}/one_mw_queuelength.csv".format(date), "w") # queue-length
+    queue_file.write("client,worker,read_queueLength, read_queueLength_std,write_queueLength,write_queueLength_std\n")
+
+    break_file = open("processed_data/one_mw/{}/one_mw_rt_breakdown.csv".format(date), "w") # rt-breakdown
+    break_file.write("client,worker,read_netthreadTime,read_queueTime,read_workerPreTime,read_memcachedRTT,read_workerPostTime,write_netthreadTime,write_queueTime,write_workerPreTime,write_memcachedRTT,write_workerPostTime\n")
+
+    
     # extract and compute values
     for vc in vc_list:
         for worker in worker_list:
-
+            
             write_tp_list = []
             read_tp_list = []
             write_rt_list = []
             read_rt_list = []
+
+            write_queueLength_list = [] 
+            read_queueLength_list = []
+            
+            write_netthreadTime_list = []
+            read_netthreadTime_list = []
+            write_queueTime_list = []
+            read_queueTime_list = []
+            write_workerPreTime_list = []
+            read_workerPreTime_list = []
+            write_memcachedRTT_list = []
+            read_memcachedRTT_list = []
+            write_workerPostTime_list = []
+            read_workerPostTime_list = []
 
             for rep in rep_list:
 
@@ -59,10 +83,31 @@ if __name__ == "__main__":
                     if df['requestType'].iloc[0] == 'SET':
                         write_tp_list.append(df[' totalRequests'].iloc[0] / 5) # divide by test-time
                         write_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0] + df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6) 
+
+                        write_queueLength_list.append(df['queueLength'].iloc[0])
+
+                        write_netthreadTime_list.append(df['netthreadTime'].iloc[0]/1e6)
+                        write_queueTime_list.append(df['queueTime'].iloc[0]/1e6)
+                        write_workerPreTime_list.append(df['workerPreTime'].iloc[0]/1e6)
+                        write_memcachedRTT_list.append(df['memcachedRTT'].iloc[0]/1e6)
+                        write_workerPostTime_list.append(df['workerPostTime'].iloc[0]/1e6)
                     
                     if df['requestType'].iloc[0]  == 'GET':
                         read_tp_list.append(df[' totalRequests'].iloc[0] / 5) # divide by test-time
                         read_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0]+ df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6)
 
+                        read_queueLength_list.append(df['queueLength'].iloc[0])
+
+                        read_netthreadTime_list.append(df['netthreadTime'].iloc[0]/1e6)
+                        read_queueTime_list.append(df['queueTime'].iloc[0]/1e6)
+                        read_workerPreTime_list.append(df['workerPreTime'].iloc[0]/1e6)
+                        read_memcachedRTT_list.append(df['memcachedRTT'].iloc[0]/1e6)
+                        read_workerPostTime_list.append(df['workerPostTime'].iloc[0]/1e6)
+
             tp_file.write('{},{},{},{},{},{}\n'.format(vc, worker, np.mean(write_tp_list), np.std(write_tp_list), np.mean(read_tp_list), np.std(read_tp_list)))
             rt_file.write('{},{},{},{},{},{}\n'.format(vc, worker, np.mean(write_rt_list), np.std(write_rt_list), np.mean(read_rt_list), np.std(read_rt_list)))
+            queue_file.write('{},{},{},{},{},{}\n'.format(vc, worker, np.mean(read_queueLength_list), np.std(read_queueLength_list), np.mean(write_queueLength_list), np.std(write_queueLength_list)))
+            break_file.write('{},{},{},{},{},{},{},'.format(vc, worker, np.mean(read_netthreadTime_list), np.mean(read_queueTime_list), np.mean(read_workerPreTime_list), np.mean(read_memcachedRTT_list), 
+                        np.mean(read_workerPostTime_list)))
+            break_file.write('{},{},{},{},{}\n'.format(np.mean(write_netthreadTime_list), np.mean(write_queueTime_list), np.mean(write_workerPreTime_list), np.mean(write_memcachedRTT_list), 
+                        np.mean(write_workerPostTime_list)))
