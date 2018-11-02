@@ -7,12 +7,15 @@ export server1_port=11211
 
 # client 1 details
 export client1_dns="fmorath@storeoipsjti6wookcsshpublicip1.westeurope.cloudapp.azure.com"
+export client1_ip="10.0.0.11"
 
 # client 2 details
 export client2_dns="fmorath@storeoipsjti6wookcsshpublicip2.westeurope.cloudapp.azure.com"
+export client2_ip="10.0.0.8"
 
 # client 3 details
 export client3_dns="fmorath@storeoipsjti6wookcsshpublicip3.westeurope.cloudapp.azure.com"
+export client3_ip="10.0.0.5"
 
 # mw 1 details
 export mw1_dns="fmorath@storeoipsjti6wookcsshpublicip4.westeurope.cloudapp.azure.com"
@@ -23,8 +26,28 @@ export mw1_port=16379
 export mw2_dns="fmorath@storeoipsjti6wookcsshpublicip4.westeurope.cloudapp.azure.com"
 
 
+function ping {
+    echo "start pinging ..."
+
+    ssh $mw1_dns "ping -i 0.2 -c 50 $client1_ip &> mw1_client1_ping.log &" & 
+    ssh $mw1_dns "ping -i 0.2 -c 50 $client2_ip &> mw1_client2_ping.log &" & 
+    ssh $mw1_dns "ping -i 0.2 -c 50 $client3_ip &> mw1_client3_ping.log &" &
+    ssh $mw1_dns "ping -i 0.2 -c 50 $server1_ip &> mw1_server1_ping.log &" &
+
+    sleep 15
+
+    ssh $mw1_dns "sudo pkill -f ping"
+
+    echo "start pinging finished"
+}
+
+
 function start_memcached_servers {
     echo "start memcached servers ..."
+
+    # kill instances (may still run)
+    ssh $server1_dns "sudo pkill -f memcached" 
+    ssh $mw1_dns "sudo pkill -f middleware"
 
     # stop memcached instance automatically started at startup then start memcached instance in background
     ssh $server1_dns "sudo service memcached stop; memcached -p $server1_port -t 1 &" &
@@ -38,7 +61,7 @@ function start_memcached_servers {
 function populate_memcached_servers {
     echo "start populating memcached servers ..."
 
-    local test_time=10 #60; # ca. 1k ops per second (we have 10k keys)
+    local test_time=60; # ca. 1k ops per second (we have 10k keys)
     local ratio="1:0"; # set requests
     local threads=1; # thread count (CT)
     local clients=1; # virtual clients per thread (VC)
@@ -60,11 +83,22 @@ function kill_instances {
     ssh $server1_dns "sudo service memcached stop; sudo pkill -f memcached" 
     ssh $mw1_dns "sudo pkill -f middleware"
 
-    # remove jar file
-    ssh $mw1_dns "rm *.jar"
-
     echo "start killing instances finished"
 }
+
+function deallocate_vms {
+    echo "start deallocating vms ..."
+
+     # deallocate azure vms
+    az vm deallocate --resource-group ASL_project --name Client1
+    az vm deallocate --resource-group ASL_project --name Client2
+    az vm deallocate --resource-group ASL_project --name Client3
+    az vm deallocate --resource-group ASL_project --name Server1
+    az vm deallocate --resource-group ASL_project --name Middleware1
+    
+    echo "start deallocating vms finished"
+}
+
 
 function compile_uplaod_mw {
     echo "start compile_uplaod_mw ..."
@@ -81,6 +115,7 @@ function compile_uplaod_mw {
 }
 
 
+
 function run_baseline_with_one_mw {
     echo "run run_baseline_with_one_mw ..."
 
@@ -88,13 +123,17 @@ function run_baseline_with_one_mw {
     local timestamp=$(date +%Y-%m-%d_%Hh%M)
     mkdir -p "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
 
+    # copy ping logs
+    scp $mw1_dns:mw1* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
+    ssh $mw1_dns "rm *.log"
+
     # params
-    local test_time=5 #90;
+    local test_time=90;
     local threads=2 # thread count (CT)
     local ratio_list=(1:0 0:1)
-    local vc_list=(2 4) #(2 4 8 16 24 32 40 48 56) # virtual clients per thread (VC)
-    local rep_list=(1 2) #(1 2 3)
-    local worker_list=(8 16) #(8 16 32 64)
+    local vc_list=(2 4 8 16 24 32 40 48 56) # virtual clients per thread (VC)
+    local rep_list=(1 2 3)
+    local worker_list=(8 16 32 64)
 
     for vc in "${vc_list[@]}"; do
         for ratio in "${ratio_list[@]}"; do
@@ -170,6 +209,10 @@ function run_baseline_with_one_mw {
 
 if [ "${1}" == "run" ]; then
 
+
+   # do ping test
+   ping
+
    # compile and upload mw
    compile_uplaod_mw 
 
@@ -184,4 +227,7 @@ if [ "${1}" == "run" ]; then
 
    # kill instances
    kill_instances
+
+   # deallocate
+   deallocate_vms
 fi
