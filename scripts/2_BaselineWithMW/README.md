@@ -9,6 +9,7 @@ sh run_experiment.sh run
 ```
 # one mw
 python3 process_mw-logs_one_mw.py <path-to-directory-to-log-files>
+python3 process_dstat-logs_one_mw.py <path-to-directory-to-log-files>
 
 ```
 
