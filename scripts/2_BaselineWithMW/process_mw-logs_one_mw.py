@@ -32,9 +32,10 @@ if __name__ == "__main__":
 
     # experiment config
     ratio_list=['0:1','1:0']
-    vc_list=[2,4] 
-    worker_list=[8,16]
-    rep_list=[1,2]
+    vc_list=[2,4,8,16,24,32,40,48,56] 
+    worker_list=[8,16,32,64]
+    rep_list=[1,2,3]
+    test_time=90
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
     tp_file = open("processed_data/one_mw/{}/one_mw_tp.csv".format(date), "w") # throughput
@@ -81,7 +82,7 @@ if __name__ == "__main__":
                     df = pd.read_csv(f)
 
                     if df['requestType'].iloc[0] == 'SET':
-                        write_tp_list.append(df[' totalRequests'].iloc[0] / 5) # divide by test-time
+                        write_tp_list.append(df[' totalRequests'].iloc[0] / test_time) # divide by test-time
                         write_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0] + df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6) 
 
                         write_queueLength_list.append(df['queueLength'].iloc[0])
@@ -93,7 +94,7 @@ if __name__ == "__main__":
                         write_workerPostTime_list.append(df['workerPostTime'].iloc[0]/1e6)
                     
                     if df['requestType'].iloc[0]  == 'GET':
-                        read_tp_list.append(df[' totalRequests'].iloc[0] / 5) # divide by test-time
+                        read_tp_list.append(df[' totalRequests'].iloc[0] / test_time) # divide by test-time
                         read_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0]+ df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6)
 
                         read_queueLength_list.append(df['queueLength'].iloc[0])
@@ -104,10 +105,10 @@ if __name__ == "__main__":
                         read_memcachedRTT_list.append(df['memcachedRTT'].iloc[0]/1e6)
                         read_workerPostTime_list.append(df['workerPostTime'].iloc[0]/1e6)
 
-            tp_file.write('{},{},{},{},{},{}\n'.format(vc, worker, np.mean(write_tp_list), np.std(write_tp_list), np.mean(read_tp_list), np.std(read_tp_list)))
-            rt_file.write('{},{},{},{},{},{}\n'.format(vc, worker, np.mean(write_rt_list), np.std(write_rt_list), np.mean(read_rt_list), np.std(read_rt_list)))
-            queue_file.write('{},{},{},{},{},{}\n'.format(vc, worker, np.mean(read_queueLength_list), np.std(read_queueLength_list), np.mean(write_queueLength_list), np.std(write_queueLength_list)))
-            break_file.write('{},{},{},{},{},{},{},'.format(vc, worker, np.mean(read_netthreadTime_list), np.mean(read_queueTime_list), np.mean(read_workerPreTime_list), np.mean(read_memcachedRTT_list), 
+            tp_file.write('{},{},{},{},{},{}\n'.format(2*3*vc, worker, np.mean(write_tp_list), np.std(write_tp_list), np.mean(read_tp_list), np.std(read_tp_list)))
+            rt_file.write('{},{},{},{},{},{}\n'.format(2*3*vc, worker, np.mean(write_rt_list), np.std(write_rt_list), np.mean(read_rt_list), np.std(read_rt_list)))
+            queue_file.write('{},{},{},{},{},{}\n'.format(2*3*vc, worker, np.mean(read_queueLength_list), np.std(read_queueLength_list), np.mean(write_queueLength_list), np.std(write_queueLength_list)))
+            break_file.write('{},{},{},{},{},{},{},'.format(2*3*vc, worker, np.mean(read_netthreadTime_list), np.mean(read_queueTime_list), np.mean(read_workerPreTime_list), np.mean(read_memcachedRTT_list), 
                         np.mean(read_workerPostTime_list)))
             break_file.write('{},{},{},{},{}\n'.format(np.mean(write_netthreadTime_list), np.mean(write_queueTime_list), np.mean(write_workerPreTime_list), np.mean(write_memcachedRTT_list), 
                         np.mean(write_workerPostTime_list)))
