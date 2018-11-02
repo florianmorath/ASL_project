@@ -115,6 +115,14 @@ function run_baseline_with_one_mw {
                         --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_${file_ext}.json &> /dev/null &" &  
 
+                        ssh $client2_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_${file_ext}.json &> /dev/null &" & 
+
+                        ssh $client3_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_${file_ext}.json &> /dev/null &" & 
+
                         # dstat: cpu, net usage statistics           
                         ssh $client1_dns "dstat -c -n --output dstat_client1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
                         ssh $mw1_dns "dstat -c -n -d --output dstat_mw1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
@@ -131,12 +139,13 @@ function run_baseline_with_one_mw {
                         # run python script to aggregate data
                         echo "aggregate mw data ..."
                         ssh $mw1_dns "python3 aggregate_mw_data.py mw.csv mw1_${file_ext}.csv"
-                                    
-                                
+                                       
                         # copy data to local file system and delete on vm
                         echo "copy collected data to local FS ..."
                         scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
                         scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
+                        scp $client2_dns:client* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
+                        scp $client3_dns:client* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
 
                         scp $mw1_dns:mw1* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
                         scp $mw1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
@@ -144,6 +153,8 @@ function run_baseline_with_one_mw {
                         scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/one_mw/$timestamp"
 
                         ssh $client1_dns "rm *.json; rm *.csv"
+                        ssh $client2_dns "rm *.json"
+                        ssh $client3_dns "rm *.json"
                         ssh $mw1_dns "rm *.csv"
                         ssh $server1_dns "rm *.csv"
                 done

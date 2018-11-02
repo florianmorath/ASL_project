@@ -17,6 +17,7 @@ python3 process_dstat-logs_one_mw.py <path-to-directory-to-log-files>
 ```
 # one mw
 plot_mw-logs_one_mw.ipynb
+plot_dstat-logs_one_mw.ipynb
 
 
 ```
