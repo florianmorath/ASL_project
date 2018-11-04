@@ -40,7 +40,7 @@ if __name__ == "__main__":
     netthreadTime = np.mean(df_f['timeEnqueued'] - df_f['timeFirstByte'])
     queueTime = np.mean(df_f['timeDequeued'] - df_f['timeEnqueued'])
     workerPreTime = np.mean(df_f['timememcachedSent'] - df_f['timeDequeued'])
-    memcachedRTT = np.mean(df_f['timememcachedReceived'] - df_f['timeFirstByte'])
+    memcachedRTT = np.mean(df_f['timememcachedReceived'] - df_f['timememcachedSent'])
     workerPostTime = np.mean(df_f['timeCompleted'] - df_f['timememcachedReceived'])
     totalRequests = df_f.shape[0]
 

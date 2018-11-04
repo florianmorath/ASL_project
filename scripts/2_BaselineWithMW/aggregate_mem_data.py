@@ -65,8 +65,21 @@ if __name__ == "__main__":
 
     tps = np.asarray(tps)
     rts = np.asarray(rts)
-    config_dict = {"configurations": {"ratio": ratio}}
-    stats_dict = {"ALL STATS": {op: {"Latency": np.mean(rts), "Ops/sec": np.mean(tps), "Misses/sec": 0.0}}}
-    json.dump(config_dict, aggregated_file)
-    json.dump(stats_dict, aggregated_file)
+  
+    stat_dict = {
+        "configuration":{
+            "ratio": ratio
+            }
 
+        ,"ALL STATS":{
+            op:{
+                "Ops/sec": np.mean(tps)
+                ,"Latency": np.mean(rts)
+                }
+            }
+        }
+
+    json.dump(stat_dict, aggregated_file)
+
+
+    
