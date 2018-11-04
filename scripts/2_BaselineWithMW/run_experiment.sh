@@ -28,7 +28,7 @@ export mw2_ip="10.0.0.4"
 export mw2_port=16379
 
 
-function ping_one {
+function ping {
     echo "start pinging ..."
 
     ssh $mw1_dns "ping -i 0.2 -c 50 $client1_ip &> mw1_client1_ping.log &" & 
@@ -71,6 +71,13 @@ function populate_memcached_servers {
     --data-size=4096 --key-pattern=S:S"  
 
     echo "start populating memcached servers finished"
+}
+
+function kill_instances_before_experiment {
+
+    # kill instances (may still run)
+    ssh $server1_dns "sudo pkill -f memcached" 
+    ssh $mw1_dns "sudo pkill -f middleware"
 }
 
 function kill_instances {
@@ -130,10 +137,10 @@ function run_baseline_with_one_mw {
     # params
     local test_time=90;
     local threads=2 # thread count (CT)
-    local ratio_list=(1:0 0:1)
-    local vc_list=(1 4 8 16 24 32) # virtual clients per thread (VC)
-    local rep_list=(1 2 3)
-    local worker_list=(8 16 32 64)
+    local ratio_list=(1:0) #(1:0 0:1)
+    local vc_list=(16) #(1 4 8 16 24 32) # virtual clients per thread (VC)
+    local rep_list=(1 2) #(1 2 3)
+    local worker_list=(32) #(8 16 32 64)
 
     for vc in "${vc_list[@]}"; do
         for ratio in "${ratio_list[@]}"; do
@@ -214,6 +221,9 @@ function run_baseline_with_one_mw {
 
 if [ "${1}" == "run" ]; then
 
+   # kill instances that may still run
+   kill_instances_before_experiment
+
    # compile and upload mw
    compile_uplaod_mw 
 
@@ -221,10 +231,10 @@ if [ "${1}" == "run" ]; then
    start_memcached_servers
 
    # populate memcached servers with key-value pairs
-   populate_memcached_servers
+   #populate_memcached_servers
 
    # do ping test one
-   ping_one
+   ping
 
    # run experiment one
    run_baseline_with_one_mw 
@@ -233,5 +243,5 @@ if [ "${1}" == "run" ]; then
    kill_instances
 
    # deallocate
-   deallocate_vms
+   #deallocate_vms
 fi

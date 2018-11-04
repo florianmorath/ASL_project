@@ -14,6 +14,7 @@ import sys
 from glob import glob
 import json
 import numpy as np
+import re
 
 """
 Args: path to directory containing log-files
@@ -31,10 +32,10 @@ if __name__ == "__main__":
 
     # experiment config
     # TODO: run script can write config params into separate file from which they can be read 
-    ratio_list=['1:0'] #['0:1','1:0']
-    vc_list=[16] #[1,4,8,16] #[2,4,8,16,24,32] 
-    worker_list=[32] #[8,16,32,64]
-    rep_list=[1,2] #[1,2,3]
+    ratio_list=['0:1','1:0']
+    vc_list=[1,4,8,16,24,32] 
+    worker_list=[8,16,32,64]
+    rep_list=[1,2,3]
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
     tp_file = open("processed_data/one_mw/{}/one_mw_mem_tp.csv".format(date), "w") # throughput
@@ -61,16 +62,25 @@ if __name__ == "__main__":
                 files = glob("{}/client*_ratio_*_vc_{}_worker_{}_rep_{}.json".format(log_dir, vc, worker, rep))
                 assert len(files) == 6
                 for f in files:
-                    js = json.load(open(f))
+                    fline=open(f).readline()
+                    parts = re.split(r"\s", fline)
+                    j = parts[5]+parts[6]+parts[7]+parts[8]+parts[9]+parts[10][:-2]
+                    op = parts[4][2:-2]
+            
+                    js = json.loads(j)
+            
+                    # check that no missed occured
+                    if js["Misses/sec"] != 0.0 or js["Misses/sec"] != 0.0:
+                        print("warning: get or set misses in {}".format(f))
 
-                    if js["configuration"]["ratio"] == "1:0":
+                    if str(op) == "Sets":
                         # set requests
-                        temp_write_tp_list.append(js["ALL STATS"]["Sets"]["Ops/sec"])
-                        temp_write_rt_list.append(js["ALL STATS"]["Sets"]["Latency"])
-                    elif js["configuration"]["ratio"] == "0:1":
+                        temp_write_tp_list.append(js["Ops/sec"])
+                        temp_write_rt_list.append(js["Latency"])
+                    elif str(op) == "Gets":
                         # read requests
-                        temp_read_tp_list.append(js["ALL STATS"]["Gets"]["Ops/sec"])
-                        temp_read_rt_list.append(js["ALL STATS"]["Gets"]["Latency"])
+                        temp_read_tp_list.append(js["Ops/sec"])
+                        temp_read_rt_list.append(js["Latency"])
                 
                 # put sum for tp and mean for rt into final lists
                 write_tp_list.append(np.sum(temp_write_tp_list))
