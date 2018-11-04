@@ -17,6 +17,8 @@ Args: 1) file containing request data 2) new file name
 """
 if __name__ == "__main__":
 
+    cutt_off = 10
+
     # get path to log file 
     log_file = sys.argv[1]
 
@@ -29,12 +31,17 @@ if __name__ == "__main__":
     f = open(log_file)
     df = pd.read_csv(f)
 
-    queueLength = np.mean(df['queueLength'])
-    netthreadTime = np.mean(df['timeEnqueued'] - df['timeFirstByte'])
-    queueTime = np.mean(df['timeDequeued'] - df['timeEnqueued'])
-    workerPreTime = np.mean(df['timememcachedSent'] - df['timeDequeued'])
-    memcachedRTT = np.mean(df['timememcachedReceived'] - df['timeFirstByte'])
-    workerPostTime = np.mean(df['timeCompleted'] - df['timememcachedReceived'])
-    totalRequests = df.shape[0]
+    start = df['timeFirstByte'].iloc[0]
+    end = df['timeFirstByte'].iloc[-1]
+
+    df_f = df[(df['timeFirstByte'] >= start + cutt_off * 1e9) & (df['timeFirstByte'] <= end - cutt_off * 1e9)]
+
+    queueLength = np.mean(df_f['queueLength'])
+    netthreadTime = np.mean(df_f['timeEnqueued'] - df_f['timeFirstByte'])
+    queueTime = np.mean(df_f['timeDequeued'] - df_f['timeEnqueued'])
+    workerPreTime = np.mean(df_f['timememcachedSent'] - df_f['timeDequeued'])
+    memcachedRTT = np.mean(df_f['timememcachedReceived'] - df_f['timeFirstByte'])
+    workerPostTime = np.mean(df_f['timeCompleted'] - df_f['timememcachedReceived'])
+    totalRequests = df_f.shape[0]
 
     aggregated_file.write('{},{},{},{},{},{},{},{}\n'.format(df['requestType'].iloc[0], queueLength, netthreadTime, queueTime, workerPreTime, memcachedRTT, workerPostTime, totalRequests))
