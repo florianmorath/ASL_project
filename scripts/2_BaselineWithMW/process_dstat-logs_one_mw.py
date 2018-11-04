@@ -31,9 +31,10 @@ if __name__ == "__main__":
 
     # experiment config
     # TODO: run script can write config params into separate file from which they can be read 
-    vc_list=[1,4,8,16,24,32] 
+    vc_list=[1,4,8,16,24] 
     worker_list=[8,16,32,64]
     rep_list=[1,2,3]
+    cutt_off = 10
 
     ratio_list=['0:1','1:0']
     operations_list=['cpu','netsend','netrecv']
@@ -55,11 +56,11 @@ if __name__ == "__main__":
                             f_log = open("{}/dstat_{}1_ratio_{}_vc_{}_worker_{}_rep_{}.csv".format(log_dir, vm, ratio, vc, worker, rep))
                             df = pd.read_csv(f_log, header=5)
                             if operation == 'netsend':
-                                op_list.append(np.mean(df['send'][1:-1])) # skip first and last x values (start-up and cool-down phase)
+                                op_list.append(np.mean(df['send'][cutt_off:-cutt_off])) # skip first and last x values (start-up and cool-down phase)
                             elif operation == 'netrecv':
-                                op_list.append(np.mean(df['recv'][1:-1]))
+                                op_list.append(np.mean(df['recv'][cutt_off:-cutt_off]))
                             elif operation == 'cpu':
-                                op_list.append(np.mean(df['idl'][1:-1].map(lambda x: 100 - x)))
+                                op_list.append(np.mean(df['idl'][cutt_off:-cutt_off].map(lambda x: 100 - x)))
                                 
                         f.write("{},{},{},{}\n".format(3*2*vc, worker, np.mean(op_list), np.std(op_list)))
 
