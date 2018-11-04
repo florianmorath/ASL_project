@@ -2,7 +2,11 @@
 
 ### 1. run experiment
 ```
+# one mw
 sh run_experiment.sh run
+
+# two mws
+sh run_experiment_2.sh run
 ```
 
 ### 2. process logs to csvs
