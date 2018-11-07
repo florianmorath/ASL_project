@@ -64,18 +64,12 @@ function start_memcached_servers {
 function populate_memcached_servers {
     echo "start populating memcached servers ..."
 
-    local test_time=60; # ca. 1k ops per second (we have 10k keys)
     local ratio="1:0"; # set requests
-    local threads=1; # thread count (CT)
-    local clients=1; # virtual clients per thread (VC)
 
     # note: use &> /dev/null to not write output to console 
-    ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port \
+    ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port -n allkeys \
     --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-    --clients=$clients --threads=$threads --test-time=$test_time --data-size=4096 &> /dev/null &" & 
-
-    # wait a little until finished + cool down
-    sleep $(($test_time + 5))
+    --data-size=4096 --key-pattern=S:S"  
 
     echo "start populating memcached servers finished"
 }
@@ -123,9 +117,14 @@ function compile_uplaod_mw {
 
     # upload
     scp "$HOME/Desktop/ASL_project/dist/middleware-fmorath.jar" $mw1_dns:
-    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mw_data.py" $mw1_dns:
     scp "$HOME/Desktop/ASL_project/dist/middleware-fmorath.jar" $mw2_dns:
+
+    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mw_data.py" $mw1_dns:
     scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mw_data.py" $mw2_dns:
+
+    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mem_data.py" $client1_dns:
+    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mem_data.py" $client2_dns:
+    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mem_data.py" $client3_dns:
 
     echo "start compile_uplaod_mw finished"
 }
@@ -146,10 +145,10 @@ function run_baseline_with_two_mws {
     ssh $mw2_dns "rm *.log"
 
     # params
-    local test_time=60 #90;
+    local test_time=90;
     local threads=1 # thread count (CT)
     local ratio_list=(1:0 0:1)
-    local vc_list=(2 4 8 16 24 32 40 48 56) # virtual clients per thread (VC)
+    local vc_list=(2 4 8 16 24) # virtual clients per thread (VC)
     local rep_list=(1 2 3)
     local worker_list=(8 16 32 64)
 
@@ -171,33 +170,33 @@ function run_baseline_with_two_mws {
                         # memtier connection to mw1
                         ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
                         --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_1_${file_ext}.json &> /dev/null &" &  
+                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_1_${file_ext}_mem.json &> ${file_ext}_1.log &" &  
 
                         ssh $client2_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
                         --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_1_${file_ext}.json &> /dev/null &" & 
+                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_1_${file_ext}_mem.json &> ${file_ext}_1.log &" & 
 
                         ssh $client3_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
                         --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_1_${file_ext}.json &> /dev/null &" & 
+                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_1_${file_ext}_mem.json &> ${file_ext}_1.log &" & 
 
                         # memtier connection to mw2
                         ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $mw2_ip -p $mw2_port \
                         --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_2_${file_ext}.json &> /dev/null &" &  
+                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_2_${file_ext}_mem.json &> ${file_ext}_2.log &" &  
 
                         ssh $client2_dns "./memtier_benchmark-master/memtier_benchmark -s $mw2_ip -p $mw2_port \
                         --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_2_${file_ext}.json &> /dev/null &" & 
+                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_2_${file_ext}_mem.json &> ${file_ext}_2.log &" & 
 
                         ssh $client3_dns "./memtier_benchmark-master/memtier_benchmark -s $mw2_ip -p $mw2_port \
                         --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_2_${file_ext}.json &> /dev/null &" & 
+                        --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_2_${file_ext}_mem.json &> ${file_ext}_2.log &" & 
 
 
                         # dstat: cpu, net usage statistics           
                         ssh $client1_dns "dstat -c -n --output dstat_client1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
-                        ssh $mw1_dns "dstat -c -n -d --output dstat_mw1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
+                        ssh $mw1_dns "dstat -c -n -d -g -y --output dstat_mw1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
                         ssh $server1_dns "dstat -c -n --output dstat_server1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
 
                         # wait until experiments are finished
@@ -210,6 +209,15 @@ function run_baseline_with_two_mws {
                         sleep 5
 
                         # run python script to aggregate data
+                        echo "aggregate mem data ..."
+                        ssh $client1_dns "python3 aggregate_mem_data.py ${file_ext}_1.log client1_1_${file_ext}.json"
+                        ssh $client2_dns "python3 aggregate_mem_data.py ${file_ext}_1.log client2_1_${file_ext}.json"
+                        ssh $client3_dns "python3 aggregate_mem_data.py ${file_ext}_1.log client3_1_${file_ext}.json"
+
+                        ssh $client1_dns "python3 aggregate_mem_data.py ${file_ext}_2.log client1_2_${file_ext}.json"
+                        ssh $client2_dns "python3 aggregate_mem_data.py ${file_ext}_2.log client2_2_${file_ext}.json"
+                        ssh $client3_dns "python3 aggregate_mem_data.py ${file_ext}_2.log client3_2_${file_ext}.json"
+
                         echo "aggregate mw data ..."
                         ssh $mw1_dns "python3 aggregate_mw_data.py mw.csv mw1_${file_ext}.csv"
                         ssh $mw2_dns "python3 aggregate_mw_data.py mw.csv mw2_${file_ext}.csv"
@@ -227,9 +235,9 @@ function run_baseline_with_two_mws {
 
                         scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
 
-                        ssh $client1_dns "rm *.json; rm *.csv"
-                        ssh $client2_dns "rm *.json"
-                        ssh $client3_dns "rm *.json"
+                        ssh $client1_dns "rm *.json; rm *.csv; rm *.log"
+                        ssh $client2_dns "rm *.json; rm *.log"
+                        ssh $client3_dns "rm *.json; rm *.log"
                         ssh $mw1_dns "rm *.csv"
                         ssh $mw2_dns "rm *.csv"
                         ssh $server1_dns "rm *.csv"
@@ -249,9 +257,6 @@ if [ "${1}" == "run" ]; then
    # kill instances that may still run
    kill_instances_before_experiment
 
-   # do ping test one
-   ping
-
    # compile and upload mw
    compile_uplaod_mw
 
@@ -260,6 +265,9 @@ if [ "${1}" == "run" ]; then
 
    # populate memcached servers with key-value pairs
    populate_memcached_servers
+
+   # do ping test one
+   ping
 
    # run experiment one
    run_baseline_with_two_mws 

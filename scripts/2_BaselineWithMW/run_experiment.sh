@@ -47,10 +47,6 @@ function ping {
 function start_memcached_servers {
     echo "start memcached servers ..."
 
-    # kill instances (may still run)
-    ssh $server1_dns "sudo pkill -f memcached" 
-    ssh $mw1_dns "sudo pkill -f middleware"
-
     # stop memcached instance automatically started at startup then start memcached instance in background
     ssh $server1_dns "sudo service memcached stop; memcached -p $server1_port -t 1 &" &
 
@@ -135,12 +131,12 @@ function run_baseline_with_one_mw {
     ssh $mw1_dns "rm *.log"
 
     # params
-    local test_time=90;
+    local test_time=70;
     local threads=2 # thread count (CT)
-    local ratio_list=(1:0) #(1:0 0:1)
-    local vc_list=(16) #(1 4 8 16 24 32) # virtual clients per thread (VC)
-    local rep_list=(1 2) #(1 2 3)
-    local worker_list=(32) #(8 16 32 64)
+    local ratio_list=(1:0 0:1)
+    local vc_list=(24) #(1 4 8 16 24 32) # virtual clients per thread (VC)
+    local rep_list=(1) #(1 2 3)
+    local worker_list=(8 32) #(8 16 32 64)
 
     for vc in "${vc_list[@]}"; do
         for ratio in "${ratio_list[@]}"; do
@@ -171,7 +167,7 @@ function run_baseline_with_one_mw {
 
                         # dstat: cpu, net usage statistics           
                         ssh $client1_dns "dstat -c -n --output dstat_client1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
-                        ssh $mw1_dns "dstat -c -n -d --output dstat_mw1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
+                        ssh $mw1_dns "dstat -c -n -d -g -y --output dstat_mw1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
                         ssh $server1_dns "dstat -c -n --output dstat_server1_${file_ext}.csv -T 1 $test_time &> /dev/null &" &
 
                         # wait until experiments are finished
@@ -231,7 +227,7 @@ if [ "${1}" == "run" ]; then
    start_memcached_servers
 
    # populate memcached servers with key-value pairs
-   #populate_memcached_servers
+   populate_memcached_servers
 
    # do ping test one
    ping
