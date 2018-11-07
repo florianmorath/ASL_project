@@ -32,11 +32,11 @@ if __name__ == "__main__":
 
     # experiment config
     ratio_list=['0:1','1:0']
-    vc_list=[2,4,8,16,24,32,40,48,56] 
+    vc_list=[2,4,8,16,24,32] 
     worker_list=[8,16,32,64]
     rep_list=[1,2,3]
-    test_time=90
-    cut_off=10 # or = 0?
+    test_time=80
+    cut_off=10
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
     tp_file = open("processed_data/two_mws/{}/two_mws_tp.csv".format(date), "w") # throughput
@@ -107,26 +107,32 @@ if __name__ == "__main__":
 
                     if df['requestType'].iloc[0] == 'SET':
                         temp_write_tp_list.append(df[' totalRequests'].iloc[0] / (test_time-2*cut_off)) # divide by test-time
-                        temp_write_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0] + df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6) 
+                        #temp_write_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0] + df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6) 
+                        temp_write_rt_list.append((df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6) 
 
                         temp_write_queueLength_list.append(df['queueLength'].iloc[0])
 
                         temp_write_netthreadTime_list.append(df['netthreadTime'].iloc[0]/1e6)
                         temp_write_queueTime_list.append(df['queueTime'].iloc[0]/1e6)
                         temp_write_workerPreTime_list.append(df['workerPreTime'].iloc[0]/1e6)
-                        temp_write_memcachedRTT_list.append(df['memcachedRTT'].iloc[0]/1e6)
+                        #temp_write_memcachedRTT_list.append(df['memcachedRTT'].iloc[0]/1e6)
+                        temp_write_memcachedRTT_list.append((df['memcachedRTT'].iloc[0]-df['netthreadTime'].iloc[0]-df['queueTime'].iloc[0]-df['workerPreTime'].iloc[0])/1e6)
+
                         temp_write_workerPostTime_list.append(df['workerPostTime'].iloc[0]/1e6)
                     
                     if df['requestType'].iloc[0]  == 'GET':
                         temp_read_tp_list.append(df[' totalRequests'].iloc[0] / (test_time-2*cut_off)) # divide by test-time
-                        temp_read_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0]+ df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6)
+                        #temp_read_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0]+ df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6)
+                        temp_read_rt_list.append((df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6)
 
                         temp_read_queueLength_list.append(df['queueLength'].iloc[0])
 
                         temp_read_netthreadTime_list.append(df['netthreadTime'].iloc[0]/1e6)
                         temp_read_queueTime_list.append(df['queueTime'].iloc[0]/1e6)
                         temp_read_workerPreTime_list.append(df['workerPreTime'].iloc[0]/1e6)
-                        temp_read_memcachedRTT_list.append(df['memcachedRTT'].iloc[0]/1e6)
+                        #temp_read_memcachedRTT_list.append(df['memcachedRTT'].iloc[0]/1e6)
+                        temp_read_memcachedRTT_list.append((df['memcachedRTT'].iloc[0]-df['netthreadTime'].iloc[0]-df['queueTime'].iloc[0]-df['workerPreTime'].iloc[0])/1e6)
+
                         temp_read_workerPostTime_list.append(df['workerPostTime'].iloc[0]/1e6)
 
                 # TODO: for tp, sum together content -> replace list. for rt take mean -> new list
@@ -144,7 +150,7 @@ if __name__ == "__main__":
                 read_queueTime_list.append(np.mean(temp_read_queueTime_list))
                 write_workerPreTime_list.append(np.mean(temp_write_workerPreTime_list))
                 read_workerPreTime_list.append(np.mean(temp_read_workerPreTime_list))
-                write_memcachedRTT_list.append(np.mean(temp_read_memcachedRTT_list))
+                write_memcachedRTT_list.append(np.mean(temp_write_memcachedRTT_list))
                 read_memcachedRTT_list.append(np.mean(temp_read_memcachedRTT_list))
                 write_workerPostTime_list.append(np.mean(temp_write_workerPostTime_list))
                 read_workerPostTime_list.append(np.mean(temp_read_workerPostTime_list))
