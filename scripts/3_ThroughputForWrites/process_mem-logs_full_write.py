@@ -31,9 +31,9 @@ if __name__ == "__main__":
 
     # experiment config
     ratio_list=['1:0']
-    vc_list=[1,32] #[1,4,8,16,24,32,48] 
-    worker_list=[64] #[8,16,32,64]
-    rep_list=[1,2] #[1,2,3]
+    vc_list=[1,4,8,16,24,32,48] 
+    worker_list=[8,16,32,64]
+    rep_list=[1,2,3]
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
     tp_file = open("processed_data/{}/full_write_mem_tp.csv".format(date), "w") # throughput

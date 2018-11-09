@@ -158,12 +158,12 @@ function run_baseline_full_write {
     ssh $mw2_dns "rm *.log"
 
     # params
-    local test_time=50 #90;
+    local test_time=90;
     local threads=1 # thread count (CT)
     local ratio_list=(1:0) # only set requests!
-    local vc_list=(1 32) #(1 4 8 16 24 32 48) # virtual clients per thread (VC)
-    local rep_list=(1 2) #(1 2 3)
-    local worker_list=(64) #(8 16 32 64)
+    local vc_list=(1 4 8 16 24 32 48) # virtual clients per thread (VC)
+    local rep_list=(1 2 3)
+    local worker_list=(8 16 32 64)
 
     for vc in "${vc_list[@]}"; do
         for ratio in "${ratio_list[@]}"; do
@@ -288,5 +288,5 @@ if [ "${1}" == "run" ]; then
    kill_instances
 
    # deallocate
-   #deallocate_vms
+   deallocate_vms
 fi

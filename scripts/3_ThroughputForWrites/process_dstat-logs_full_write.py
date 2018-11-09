@@ -30,9 +30,9 @@ if __name__ == "__main__":
     os.makedirs('processed_data/{}'.format(date), exist_ok=True)
 
     # experiment config
-    vc_list=[1,32] #[1,4,8,16,24,32] 
-    worker_list=[64] #[8,16,32,64]
-    rep_list=[1,2] #[1,2,3]
+    vc_list=[1,4,8,16,24,32,48] 
+    worker_list=[8,16,32,64]
+    rep_list=[1,2,3]
     cutt_off = 10
 
     ratio_list=['1:0']
