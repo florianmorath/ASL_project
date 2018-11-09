@@ -1,10 +1,21 @@
 #!/bin/bash
 
 # gmail-account
+
 # server 1 details
 export server1_dns="fmorath@storezbhg5w3nih76usshpublicip6.westeurope.cloudapp.azure.com"
 export server1_ip="10.0.0.6"
 export server1_port=11211
+
+# server 2 details
+export server2_dns="fmorath@storezbhg5w3nih76usshpublicip7.westeurope.cloudapp.azure.com"
+export server2_ip="10.0.0.10"
+export server2_port=11211
+
+# server 3 details
+export server3_dns="fmorath@storezbhg5w3nih76usshpublicip8.westeurope.cloudapp.azure.com"
+export server3_ip="10.0.0.7"
+export server3_port=11211
 
 # client 1 details
 export client1_dns="fmorath@storezbhg5w3nih76usshpublicip1.westeurope.cloudapp.azure.com"
@@ -29,6 +40,7 @@ export mw2_ip="10.0.0.5"
 export mw2_port=16379
 
 
+
 function ping {
     echo "start pinging ..."
 
@@ -36,11 +48,15 @@ function ping {
     ssh $mw1_dns "ping -i 0.2 -c 50 $client2_ip &> mw1_client2_ping.log &" & 
     ssh $mw1_dns "ping -i 0.2 -c 50 $client3_ip &> mw1_client3_ping.log &" &
     ssh $mw1_dns "ping -i 0.2 -c 50 $server1_ip &> mw1_server1_ping.log &" &
+    ssh $mw1_dns "ping -i 0.2 -c 50 $server2_ip &> mw1_server2_ping.log &" &
+    ssh $mw1_dns "ping -i 0.2 -c 50 $server3_ip &> mw1_server3_ping.log &" &
 
     ssh $mw2_dns "ping -i 0.2 -c 50 $client1_ip &> mw2_client1_ping.log &" & 
     ssh $mw2_dns "ping -i 0.2 -c 50 $client2_ip &> mw2_client2_ping.log &" & 
     ssh $mw2_dns "ping -i 0.2 -c 50 $client3_ip &> mw2_client3_ping.log &" &
     ssh $mw2_dns "ping -i 0.2 -c 50 $server1_ip &> mw2_server1_ping.log &" &
+    ssh $mw2_dns "ping -i 0.2 -c 50 $server2_ip &> mw2_server2_ping.log &" &
+    ssh $mw2_dns "ping -i 0.2 -c 50 $server3_ip &> mw2_server3_ping.log &" &
 
     sleep 15
 
@@ -55,6 +71,8 @@ function start_memcached_servers {
 
     # stop memcached instance automatically started at startup then start memcached instance in background
     ssh $server1_dns "sudo service memcached stop; memcached -p $server1_port -t 1 &" &
+    ssh $server2_dns "sudo service memcached stop; memcached -p $server2_port -t 1 &" &
+    ssh $server3_dns "sudo service memcached stop; memcached -p $server3_port -t 1 &" &
 
     # sleep to be sure memcached servers started completely
     sleep 2
@@ -62,23 +80,13 @@ function start_memcached_servers {
     echo "start memcached servers finished"
 }
 
-function populate_memcached_servers {
-    echo "start populating memcached servers ..."
-
-    local ratio="1:0"; # set requests
-
-    # note: use &> /dev/null to not write output to console 
-    ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port -n allkeys \
-    --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
-    --data-size=4096 --key-pattern=S:S"  
-
-    echo "start populating memcached servers finished"
-}
 
 function kill_instances_before_experiment {
 
     # kill instances (may still run)
     ssh $server1_dns "sudo pkill -f memcached" 
+    ssh $server2_dns "sudo pkill -f memcached" 
+    ssh $server3_dns "sudo pkill -f memcached" 
     ssh $mw1_dns "sudo pkill -f middleware"
     ssh $mw2_dns "sudo pkill -f middleware"
 
@@ -88,6 +96,8 @@ function kill_instances {
     echo "start killing instances ..."
 
     ssh $server1_dns "sudo service memcached stop; sudo pkill -f memcached" 
+    ssh $server2_dns "sudo service memcached stop; sudo pkill -f memcached" 
+    ssh $server3_dns "sudo service memcached stop; sudo pkill -f memcached" 
     ssh $mw1_dns "sudo pkill -f middleware"
     ssh $mw2_dns "sudo pkill -f middleware"
 
@@ -102,6 +112,8 @@ function deallocate_vms {
     az vm deallocate --resource-group ASL_project --name Client2
     az vm deallocate --resource-group ASL_project --name Client3
     az vm deallocate --resource-group ASL_project --name Server1
+    az vm deallocate --resource-group ASL_project --name Server2
+    az vm deallocate --resource-group ASL_project --name Server3
     az vm deallocate --resource-group ASL_project --name Middleware1
     az vm deallocate --resource-group ASL_project --name Middleware2
 
@@ -120,38 +132,38 @@ function compile_uplaod_mw {
     scp "$HOME/Desktop/ASL_project/dist/middleware-fmorath.jar" $mw1_dns:
     scp "$HOME/Desktop/ASL_project/dist/middleware-fmorath.jar" $mw2_dns:
 
-    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mw_data.py" $mw1_dns:
-    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mw_data.py" $mw2_dns:
+    scp "$HOME/Desktop/ASL_project/scripts/3_ThroughputForWrites/aggregate_mw_data.py" $mw1_dns:
+    scp "$HOME/Desktop/ASL_project/scripts/3_ThroughputForWrites/aggregate_mw_data.py" $mw2_dns:
 
-    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mem_data.py" $client1_dns:
-    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mem_data.py" $client2_dns:
-    scp "$HOME/Desktop/ASL_project/scripts/2_BaselineWithMW/aggregate_mem_data.py" $client3_dns:
+    scp "$HOME/Desktop/ASL_project/scripts/3_ThroughputForWrites/aggregate_mem_data.py" $client1_dns:
+    scp "$HOME/Desktop/ASL_project/scripts/3_ThroughputForWrites/aggregate_mem_data.py" $client2_dns:
+    scp "$HOME/Desktop/ASL_project/scripts/3_ThroughputForWrites/aggregate_mem_data.py" $client3_dns:
 
     echo "start compile_uplaod_mw finished"
 }
 
 
-function run_baseline_with_two_mws {
-    echo "run run_baseline_with_two_mws ..."
+function run_baseline_full_write {
+    echo "run run_baseline_full_write ..."
 
     # log folder setup
     local timestamp=$(date +%Y-%m-%d_%Hh%M)
-    mkdir -p "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
+    mkdir -p "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
 
     # copy ping logs
-    scp $mw1_dns:mw1* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
+    scp $mw1_dns:mw1* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
     ssh $mw1_dns "rm *.log"
 
-    scp $mw2_dns:mw2* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
+    scp $mw2_dns:mw2* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
     ssh $mw2_dns "rm *.log"
 
     # params
-    local test_time=90;
+    local test_time=50 #90;
     local threads=1 # thread count (CT)
-    local ratio_list=(1:0 0:1)
-    local vc_list=(2 4 8 16 24) # virtual clients per thread (VC)
-    local rep_list=(1 2 3)
-    local worker_list=(8 16 32 64)
+    local ratio_list=(1:0) # only set requests!
+    local vc_list=(1 32) #(1 4 8 16 24 32 48) # virtual clients per thread (VC)
+    local rep_list=(1 2) #(1 2 3)
+    local worker_list=(64) #(8 16 32 64)
 
     for vc in "${vc_list[@]}"; do
         for ratio in "${ratio_list[@]}"; do
@@ -164,8 +176,10 @@ function run_baseline_with_two_mws {
                         file_ext="ratio_${ratio}_vc_${vc}_worker_${worker}_rep_${rep}"
 
                         # middleware 
-                        ssh $mw1_dns "java -jar middleware-fmorath.jar -l $mw1_ip -p $mw1_port -m ${server1_ip}:${server1_port} -t $worker -s false &> /dev/null &" &
-                        ssh $mw2_dns "java -jar middleware-fmorath.jar -l $mw2_ip -p $mw2_port -m ${server1_ip}:${server1_port} -t $worker -s false &> /dev/null &" &
+                        ssh $mw1_dns "java -jar middleware-fmorath.jar -l $mw1_ip -p $mw1_port -m ${server1_ip}:${server1_port} ${server2_ip}:${server2_port} ${server3_ip}:${server3_port} \
+                        -t $worker -s false &> /dev/null &" &
+                        ssh $mw2_dns "java -jar middleware-fmorath.jar -l $mw2_ip -p $mw2_port -m ${server1_ip}:${server1_port} ${server2_ip}:${server2_port} ${server3_ip}:${server3_port} \
+                        -t $worker -s false &> /dev/null &" &
                         sleep 2
 
                         # memtier connection to mw1
@@ -225,16 +239,16 @@ function run_baseline_with_two_mws {
                                        
                         # copy data to local file system and delete on vm
                         echo "copy collected data to local FS ..."
-                        scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
-                        scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
-                        scp $client2_dns:client* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
-                        scp $client3_dns:client* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
+                        scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
+                        scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
+                        scp $client2_dns:client* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
+                        scp $client3_dns:client* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
 
-                        scp $mw1_dns:mw1* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
-                        scp $mw1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
-                        scp $mw2_dns:mw2* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
+                        scp $mw1_dns:mw1* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
+                        scp $mw1_dns:dstat* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
+                        scp $mw2_dns:mw2* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
 
-                        scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/2_BaselineWithMW/two_mws/$timestamp"
+                        scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/3_ThroughputForWrites/$timestamp"
 
                         ssh $client1_dns "rm *.json; rm *.csv; rm *.log"
                         ssh $client2_dns "rm *.json; rm *.log"
@@ -248,7 +262,7 @@ function run_baseline_with_two_mws {
         done
     done
             
-    echo "run run_baseline_with_two_mws finished"
+    echo "run run_baseline_full_write finished"
 } 
 
 
@@ -264,14 +278,11 @@ if [ "${1}" == "run" ]; then
    # start memcached servers
    start_memcached_servers
 
-   # populate memcached servers with key-value pairs
-   populate_memcached_servers
-
    # do ping test one
    ping
 
-   # run experiment one
-   run_baseline_with_two_mws 
+   # run experiment 
+   run_baseline_full_write 
 
    # kill instances
    kill_instances
