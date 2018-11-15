@@ -33,8 +33,8 @@ if __name__ == "__main__":
     # TODO: run script can write config params into separate file from which they can be read 
     ratio_list=['0:1','1:0']
     vc_list=[32] 
-    worker_list=[8] #[8,32]
-    rep_list=[1,2] #[1,2,3]
+    worker_list=[8,32]
+    rep_list=[1,2,3]
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
     tp_file = open("processed_data/{}/mw_2_s_3_mem_tp.csv".format(date), "w") # throughput
