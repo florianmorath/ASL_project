@@ -10,6 +10,7 @@ sh run_experiment.sh run
 ```
 python3 process_dstat-logs.py <path-to-directory-to-log-files>
 python3 process_mem-logs.py <path-to-directory-to-log-files>
+python3 process_mem-logs_histogram.py <path-to-directory-to-log-files>
 python3 process_mw-logs.py <path-to-directory-to-log-files>
 
 
