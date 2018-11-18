@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     tp_file.write("client,worker,ratio,sharded_tp_mean,sharded_tp_std,nonsharded_tp_mean,nonsharded_tp_std\n")
     rt_file.write("client,worker,ratio,sharded_rt_mean,sharded_rt_std,nonsharded_rt_mean,nonsharded_rt_std\n")    
-    perc_file.write("client,worker,ratio,s_25_mean,s_25_std,s_50_mean,s_50_std,s_75_mean,s_75_std,s_90_mean,s_90_std,s_99_mean,s_99_std,n_25_mean,n_25_std,n_50_mean,n_50_std,n_75_mean,n_75_std,n_90_mean,n_90_std,n_99mean,n_99_std\n")
+    perc_file.write("client,worker,ratio,s_25_mean,s_25_std,s_50_mean,s_50_std,s_75_mean,s_75_std,s_90_mean,s_90_std,s_99_mean,s_99_std,n_25_mean,n_25_std,n_50_mean,n_50_std,n_75_mean,n_75_std,n_90_mean,n_90_std,n_99_mean,n_99_std\n")
 
     # extract and compute values
     s_tp_list = []
