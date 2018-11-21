@@ -1,42 +1,44 @@
 #!/bin/bash
 
-# gmail-account
+# gmx account
+
 # server 1 details
-export server1_dns="fmorath@storezbhg5w3nih76usshpublicip6.westeurope.cloudapp.azure.com"
-export server1_ip="10.0.0.6"
+export server1_dns="fmorath@storeoipsjti6wookcsshpublicip6.westeurope.cloudapp.azure.com"
+export server1_ip="10.0.0.7"
 export server1_port=11211
 
 # server 2 details
-export server2_dns="fmorath@storezbhg5w3nih76usshpublicip7.westeurope.cloudapp.azure.com"
+export server2_dns="fmorath@storeoipsjti6wookcsshpublicip7.westeurope.cloudapp.azure.com"
 export server2_ip="10.0.0.10"
 export server2_port=11211
 
 # server 3 details
-export server3_dns="fmorath@storezbhg5w3nih76usshpublicip8.westeurope.cloudapp.azure.com"
-export server3_ip="10.0.0.7"
+export server3_dns="fmorath@storeoipsjti6wookcsshpublicip8.westeurope.cloudapp.azure.com"
+export server3_ip="10.0.0.6"
 export server3_port=11211
 
 # client 1 details
-export client1_dns="fmorath@storezbhg5w3nih76usshpublicip1.westeurope.cloudapp.azure.com"
-export client1_ip="10.0.0.8"
+export client1_dns="fmorath@storeoipsjti6wookcsshpublicip1.westeurope.cloudapp.azure.com"
+export client1_ip="10.0.0.11"
 
 # client 2 details
-export client2_dns="fmorath@storezbhg5w3nih76usshpublicip2.westeurope.cloudapp.azure.com"
-export client2_ip="10.0.0.4"
+export client2_dns="fmorath@storeoipsjti6wookcsshpublicip2.westeurope.cloudapp.azure.com"
+export client2_ip="10.0.0.8"
 
 # client 3 details
-export client3_dns="fmorath@storezbhg5w3nih76usshpublicip3.westeurope.cloudapp.azure.com"
-export client3_ip="10.0.0.9"
+export client3_dns="fmorath@storeoipsjti6wookcsshpublicip3.westeurope.cloudapp.azure.com"
+export client3_ip="10.0.0.5"
 
 # mw 1 details
-export mw1_dns="fmorath@storezbhg5w3nih76usshpublicip4.westeurope.cloudapp.azure.com"
-export mw1_ip="10.0.0.11"
+export mw1_dns="fmorath@storeoipsjti6wookcsshpublicip4.westeurope.cloudapp.azure.com"
+export mw1_ip="10.0.0.9"
 export mw1_port=16379
 
 # mw 2 details
-export mw2_dns="fmorath@storezbhg5w3nih76usshpublicip5.westeurope.cloudapp.azure.com"
-export mw2_ip="10.0.0.5"
+export mw2_dns="fmorath@storeoipsjti6wookcsshpublicip5.westeurope.cloudapp.azure.com"
+export mw2_ip="10.0.0.4"
 export mw2_port=16379
+
 
 
 function ping {
@@ -224,9 +226,9 @@ function run_experiment {
                         sleep 5
 
                         # run python script to aggregate data
-                        #echo "aggregate mw data ..."
-                        #ssh $mw1_dns "python3 aggregate_mw_data.py mw.csv mw1_${file_ext}.csv"
-                        #ssh $mw2_dns "python3 aggregate_mw_data.py mw.csv mw2_${file_ext}.csv"
+                        echo "aggregate mw data ..."
+                        ssh $mw1_dns "python3 aggregate_mw_data.py mw.csv mw1_${file_ext}.csv"
+                        ssh $mw2_dns "python3 aggregate_mw_data.py mw.csv mw2_${file_ext}.csv"
                                        
                         # copy data to local file system and delete on vm
                         echo "copy collected data to local FS ..."
@@ -234,8 +236,8 @@ function run_experiment {
                         scp $client2_dns:client* "$HOME/Desktop/ASL_project/logs/4_GetsAndMultigets/$timestamp"
                         scp $client3_dns:client* "$HOME/Desktop/ASL_project/logs/4_GetsAndMultigets/$timestamp"
 
-                        #scp $mw1_dns:mw1* "$HOME/Desktop/ASL_project/logs/4_GetsAndMultigets/$timestamp"
-                        #scp $mw2_dns:mw2* "$HOME/Desktop/ASL_project/logs/4_GetsAndMultigets/$timestamp"
+                        scp $mw1_dns:mw1* "$HOME/Desktop/ASL_project/logs/4_GetsAndMultigets/$timestamp"
+                        scp $mw2_dns:mw2* "$HOME/Desktop/ASL_project/logs/4_GetsAndMultigets/$timestamp"
 
                         scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/4_GetsAndMultigets/$timestamp"
                         scp $mw1_dns:dstat* "$HOME/Desktop/ASL_project/logs/4_GetsAndMultigets/$timestamp"

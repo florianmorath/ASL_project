@@ -4,7 +4,7 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- mem_histogram.csv: throughput for sharded and nonsharded loads
+- mem_histogram.csv: rt histogram for sharded and nonsharded loads
 
 """
 
