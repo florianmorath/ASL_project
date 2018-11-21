@@ -28,11 +28,11 @@ if __name__ == "__main__":
     os.makedirs('processed_data/{}'.format(date), exist_ok=True)
 
     # experiment config
-    ratio_list=['1:1']#['1:6']
+    ratio_list=['1:6']
     vc_list=[2] 
     worker_list=[64]
-    rep_list=[1] #[1,2,3]
-    sharded_list=['true'] #['true','false']
+    rep_list=[1,2,3]
+    sharded_list=['true','false']
     mw_list = [1,2]
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
