@@ -221,6 +221,7 @@ public class WorkerThread extends Thread {
 
         } else {
             // sharded mode
+            logger.info("sharded mode");
 
             // First extract the keys from the Multiget.
             String requestString = new String(Arrays.copyOfRange(request.buffer.array(), 3,

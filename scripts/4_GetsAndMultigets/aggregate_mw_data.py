@@ -53,6 +53,8 @@ if __name__ == "__main__":
     weight_dict = {}
     for i in range(100):
         weight_dict.update({i+1:0})
+
+    notincl = 0
     
     for index, row in df_f.iterrows():
         exact_latency_ms = (row['timeCompleted'] - row['timeFirstByte'])/1e6
@@ -61,6 +63,10 @@ if __name__ == "__main__":
         curr = weight_dict.get(bucket_pos)
         if curr is not None:
             weight_dict.update({bucket_pos:curr + 1})
+        else:
+            notincl += 1
 
     for latency, weight in weight_dict.items():
         hist_file.write('{},{}\n'.format(latency,weight))
+    
+    print("not included: " + str(notincl))

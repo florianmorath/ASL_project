@@ -159,7 +159,7 @@ function run_experiment {
     ssh $mw2_dns "rm *.log"
 
     # params
-    local test_time=30;
+    local test_time=90;
     local threads=1 # thread count (CT)
     local ratio_list=(1:1 1:3 1:6 1:9)
     local vc_list=(2) # virtual clients per thread (VC)
