@@ -44,21 +44,21 @@ export mw2_port=16379
 function ping {
     echo "start pinging ..."
 
-    ssh $mw1_dns "ping -i 0.2 -c 50 $client1_ip &> mw1_client1_ping.log &" & 
-    ssh $mw1_dns "ping -i 0.2 -c 50 $client2_ip &> mw1_client2_ping.log &" & 
-    ssh $mw1_dns "ping -i 0.2 -c 50 $client3_ip &> mw1_client3_ping.log &" &
-    ssh $mw1_dns "ping -i 0.2 -c 50 $server1_ip &> mw1_server1_ping.log &" &
-    ssh $mw1_dns "ping -i 0.2 -c 50 $server2_ip &> mw1_server2_ping.log &" &
-    ssh $mw1_dns "ping -i 0.2 -c 50 $server3_ip &> mw1_server3_ping.log &" &
+    ssh $mw1_dns "ping -i 0.2 -c 100 $client1_ip &> mw1_client1_ping.log &" & 
+    ssh $mw1_dns "ping -i 0.2 -c 100 $client2_ip &> mw1_client2_ping.log &" & 
+    ssh $mw1_dns "ping -i 0.2 -c 100 $client3_ip &> mw1_client3_ping.log &" &
+    ssh $mw1_dns "ping -i 0.2 -c 100 $server1_ip &> mw1_server1_ping.log &" &
+    ssh $mw1_dns "ping -i 0.2 -c 100 $server2_ip &> mw1_server2_ping.log &" &
+    ssh $mw1_dns "ping -i 0.2 -c 100 $server3_ip &> mw1_server3_ping.log &" &
 
-    ssh $mw2_dns "ping -i 0.2 -c 50 $client1_ip &> mw2_client1_ping.log &" & 
-    ssh $mw2_dns "ping -i 0.2 -c 50 $client2_ip &> mw2_client2_ping.log &" & 
-    ssh $mw2_dns "ping -i 0.2 -c 50 $client3_ip &> mw2_client3_ping.log &" &
-    ssh $mw2_dns "ping -i 0.2 -c 50 $server1_ip &> mw2_server1_ping.log &" &
-    ssh $mw2_dns "ping -i 0.2 -c 50 $server2_ip &> mw2_server2_ping.log &" &
-    ssh $mw2_dns "ping -i 0.2 -c 50 $server3_ip &> mw2_server3_ping.log &" &
+    ssh $mw2_dns "ping -i 0.2 -c 100 $client1_ip &> mw2_client1_ping.log &" & 
+    ssh $mw2_dns "ping -i 0.2 -c 100 $client2_ip &> mw2_client2_ping.log &" & 
+    ssh $mw2_dns "ping -i 0.2 -c 100 $client3_ip &> mw2_client3_ping.log &" &
+    ssh $mw2_dns "ping -i 0.2 -c 100 $server1_ip &> mw2_server1_ping.log &" &
+    ssh $mw2_dns "ping -i 0.2 -c 100 $server2_ip &> mw2_server2_ping.log &" &
+    ssh $mw2_dns "ping -i 0.2 -c 100 $server3_ip &> mw2_server3_ping.log &" &
 
-    sleep 15
+    sleep 30
 
     ssh $mw1_dns "sudo pkill -f ping"
     ssh $mw2_dns "sudo pkill -f ping"
@@ -159,13 +159,13 @@ function run_experiment {
     ssh $mw2_dns "rm *.log"
 
     # params
-    local test_time=90;
+    local test_time=60;
     local threads=1 # thread count (CT)
-    local ratio_list=(1:1 1:3 1:6 1:9)
+    local ratio_list=(1:3) #(1:1 1:3 1:6 1:9)
     local vc_list=(2) # virtual clients per thread (VC)
-    local rep_list=(1 2 3)
+    local rep_list=(1) #(1 2 3) 
     local worker_list=(64)
-    local sharded_list=(true false)
+    local sharded_list=(false) #(true false) 
 
     for sharded in "${sharded_list[@]}"; do
         for ratio in "${ratio_list[@]}"; do
@@ -187,28 +187,28 @@ function run_experiment {
 
                         # memtier connection to mw1
                         ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --multi-key-get=${ratio: -1}\
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_1_${file_ext}_mem.json &> /dev/null &" &  
 
                         ssh $client2_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --multi-key-get=${ratio: -1}\
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_1_${file_ext}_mem.json &> /dev/null &" & 
 
                         ssh $client3_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --multi-key-get=${ratio: -1}\
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_1_${file_ext}_mem.json &> /dev/null &" & 
 
                         # memtier connection to mw2
                         ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $mw2_ip -p $mw2_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --multi-key-get=${ratio: -1}\
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_2_${file_ext}_mem.json &> /dev/null &" &  
 
                         ssh $client2_dns "./memtier_benchmark-master/memtier_benchmark -s $mw2_ip -p $mw2_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --multi-key-get=${ratio: -1}\
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_2_${file_ext}_mem.json &> /dev/null &" & 
 
                         ssh $client3_dns "./memtier_benchmark-master/memtier_benchmark -s $mw2_ip -p $mw2_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --multi-key-get=${ratio: -1}\
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_2_${file_ext}_mem.json &> /dev/null &" & 
 
                         # dstat: cpu, net usage statistics           

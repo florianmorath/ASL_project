@@ -51,7 +51,7 @@ if __name__ == "__main__":
     hist_file.write("latency,weight\n")
 
     weight_dict = {}
-    for i in range(100):
+    for i in range(200):
         weight_dict.update({i+1:0})
 
     notincl = 0

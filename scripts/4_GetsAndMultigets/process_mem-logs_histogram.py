@@ -70,8 +70,12 @@ if __name__ == "__main__":
                                         if round(distance,1) <= 0.1:
                                             bucket_position = math.ceil(distr_list[i+1].get('<=msec')/0.1) 
                                             curr = distr_dict.get(bucket_position)
+                                            
                                             distr_dict.update({bucket_position:curr + weight})
-
+                                            
+                                            # if curr = 100 , set to 99 one
+                                            if bucket_position == 100:
+                                                distr_dict.update({bucket_position:distr_dict.get(99)})
                                 
                             # write data to csv
                             for latency, weight in distr_dict.items():
