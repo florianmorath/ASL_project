@@ -37,10 +37,10 @@ if __name__ == "__main__":
     cut_off=10
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
-    tp_file = open("processed_data/{}/full_write_mw_tp_max.csv".format(date), "w") # throughput
+    tp_file = open("processed_data/full_write/{}/full_write_mw_tp_max.csv".format(date), "w") # throughput
     tp_file.write("client,worker,write_tp_mean,write_tp_std\n")
 
-    break_file = open("processed_data/{}/full_write_mw_rt_breakdown_min.csv".format(date), "w") # rt-breakdown
+    break_file = open("processed_data/full_write/{}/full_write_mw_rt_breakdown_min.csv".format(date), "w") # rt-breakdown
     break_file.write("client,worker,write_netthreadTime,write_queueTime,write_workerPreTime,write_memcachedRTT,write_workerPostTime\n")
 
     
