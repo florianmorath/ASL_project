@@ -15,7 +15,7 @@ delay_client=0
 delay_network=0.0004347369299622783
 
 m_netthread=1
-m_worker=8
+m_worker=64
 
 # the model
 P = [ 0 0.5 0.5 0 0 0 0 0;
@@ -39,7 +39,7 @@ Q8 = qnmknode("-/g/inf", delay_network);
        
 
 # solve 
-[U R Q X] = qnsolve("closed", N, {Q1,Q2,Q3,Q4,Q5}, V, Z);
+[U R Q X] = qnsolve("closed", N, {Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8}, V, Z);
 
 U
 R
