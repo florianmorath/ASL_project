@@ -34,7 +34,6 @@ public class WorkerThread extends Thread {
     ByteBuffer shardedBuffer = ByteBuffer.allocate(11 * 4096);
 
     // round-robin load balancer
-    // TODO: do empirical evaluation showing that all memcached servers are under same load (put into test folder)
     private int lastServerIndex = 0;
 
 

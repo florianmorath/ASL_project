@@ -2,7 +2,8 @@
 
 ### 1. run experiment
 ```
-sh run_experiment.sh run
+sh run_experiment_one_server.sh run
+sh run_experiment_two_servers.sh run
 ```
 
 ### 2. process logs to csvs

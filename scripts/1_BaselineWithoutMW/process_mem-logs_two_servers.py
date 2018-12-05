@@ -31,9 +31,8 @@ if __name__ == "__main__":
     os.makedirs('processed_data/two_servers/{}'.format(date), exist_ok=True)
 
     # experiment config
-    # TODO: run script can write config params into separate file from which they can be read 
     ratio_list=['0:1','1:0']
-    vc_list=[2,4,8,16,24,32,40,48,56] 
+    vc_list=[1,4,8,16,24,32,40] 
     rep_list=[1,2,3]
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
@@ -61,10 +60,6 @@ if __name__ == "__main__":
             assert len(files) == 4
             for f in files:
                 js = json.load(open(f))
-
-                # check that no missed occured
-                if (js["ALL STATS"]["Gets"]["Misses/sec"] != 0.0 or js["ALL STATS"]["Sets"]["Misses/sec"] != 0.0 ):
-                    print("warning: get or set misses in {}".format(f))
 
                 if js["configuration"]["ratio"] == "1:0":
                     # set requests

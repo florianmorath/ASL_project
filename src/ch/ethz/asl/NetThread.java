@@ -127,7 +127,6 @@ public class NetThread extends Thread {
             // selector listens for read events
             SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
 
-            // TODO: Maybe use direct buffer for better throughput
             // create a Buffer once for every client socket (will be cleared before client sends new request)
             ByteBuffer buffer = ByteBuffer.allocate(1024 * 5); // max 16B key, 4096B value for set request
             key.attach(buffer);
