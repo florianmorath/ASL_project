@@ -56,7 +56,7 @@ if __name__ == "__main__":
             temp_write_rt_list = []
             temp_read_rt_list = []
 
-            files = glob("{}/client*_ratio_*_vc_{}_rep_{}.json".format(log_dir, vc, rep))
+            files = glob("{}/client*_ratio_*_vc_{}_rep_{}_mem.json".format(log_dir, vc, rep))
             assert len(files) == 4
             for f in files:
                 js = json.load(open(f))

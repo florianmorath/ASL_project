@@ -80,12 +80,12 @@ function run_baseline_without_mw_one_server {
     # params
     local test_time=80;
     local threads=2 # thread count (CT)
-    local ratio_list=(1:0 0:1)
+    local ratio_list=(0:1 1:0)
     local vc_list=(1 4 8 16 24 32 40) # virtual clients per thread (VC)
     local rep_list=(1 2 3)
 
-    for vc in "${vc_list[@]}"; do
-        for ratio in "${ratio_list[@]}"; do
+    for ratio in "${ratio_list[@]}"; do
+        for vc in "${vc_list[@]}"; do   
             for rep in "${rep_list[@]}"; do
 
                     echo "lunch ratio_${ratio}_vc_${vc}_rep_${rep} run"
@@ -111,27 +111,27 @@ function run_baseline_without_mw_one_server {
 
                     # wait until experiments are finished
                     sleep $(($test_time + 5))
+
+                    # run python script to aggregate data
+                    echo "aggregate mem data ..."
+                    ssh $client1_dns "python3 aggregate_mem_data.py ${file_ext}.log client1_${file_ext}.json"
+                    ssh $client2_dns "python3 aggregate_mem_data.py ${file_ext}.log client2_${file_ext}.json"
+                    ssh $client3_dns "python3 aggregate_mem_data.py ${file_ext}.log client3_${file_ext}.json"
+
+                    # copy data to local file system and delete on vm
+                    echo "copy collected data to local FS ..."
+                    scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
+                    scp $client2_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
+                    scp $client3_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
+
+                    scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
+                    scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
+
+                    ssh $client1_dns "rm *.json; rm *.csv; rm *.log"
+                    ssh $client2_dns "rm *.json; rm *.log"
+                    ssh $client3_dns "rm *.json; rm *.log"
+                    ssh $server1_dns "rm *.csv"
             done
-
-            # run python script to aggregate data
-            echo "aggregate mem data ..."
-            ssh $client1_dns "python3 aggregate_mem_data.py ${file_ext}.log client1_${file_ext}.json"
-            ssh $client2_dns "python3 aggregate_mem_data.py ${file_ext}.log client2_${file_ext}.json"
-            ssh $client3_dns "python3 aggregate_mem_data.py ${file_ext}.log client3_${file_ext}.json"
-
-            # copy data to local file system and delete on vm
-            echo "copy collected data to local FS ..."
-            scp $client1_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
-            scp $client2_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
-            scp $client3_dns:client* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
-
-            scp $client1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
-            scp $server1_dns:dstat* "$HOME/Desktop/ASL_project/logs/1_BaselineWithoutMW/one_server/$timestamp"
-
-            ssh $client1_dns "rm *.json; rm *.csv; rm *.log"
-            ssh $client2_dns "rm *.json; rm *.log"
-            ssh $client3_dns "rm *.json; rm *.log"
-            ssh $server1_dns "rm *.csv"
 
         done
     done

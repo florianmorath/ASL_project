@@ -30,8 +30,7 @@ if __name__ == "__main__":
     os.makedirs('processed_data/two_servers/{}'.format(date), exist_ok=True)
 
     # experiment config
-    # TODO: run script can write config params into separate file from which they can be read 
-    vc_list=[2,4,8,16,24,32,40,48,56] 
+    vc_list=[1,4,8,16,24,32,40] 
     rep_list=[1,2,3]
 
     ratio_list=['0:1','1:0']
