@@ -59,7 +59,7 @@ public class NetThread extends Thread {
 
             // Create and configure ServerSocket
             serverChannel = ServerSocketChannel.open();
-            serverChannel.socket().bind(new InetSocketAddress(myIp, myPort));
+            serverChannel.socket().bind(new InetSocketAddress(myIp, myPort), 400); // define backlog size
             serverChannel.configureBlocking(false);
 
             // register the channel for accept events
