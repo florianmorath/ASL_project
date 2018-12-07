@@ -30,11 +30,10 @@ if __name__ == "__main__":
     os.makedirs('processed_data/one_mw/{}'.format(date), exist_ok=True)
 
     # experiment config
-    # TODO: run script can write config params into separate file from which they can be read 
-    ratio_list=['1:0'] #['0:1','1:0']
-    vc_list=[16] #[1,4,8,16] #[2,4,8,16,24,32] 
-    worker_list=[32] #[8,16,32,64]
-    rep_list=[1,2] #[1,2,3]
+    ratio_list=['0:1','1:0']
+    vc_list=[1,4,8,16,24,32,40] 
+    worker_list=[8,16,32,64]
+    rep_list=[1,2,3]
 
     # create csv files (one csv file contains all data that will be plotted in one plot)
     tp_file = open("processed_data/one_mw/{}/one_mw_mem_tp.csv".format(date), "w") # throughput

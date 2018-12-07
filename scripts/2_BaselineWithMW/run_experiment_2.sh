@@ -1,31 +1,30 @@
 #!/bin/bash
 
-# gmail-account
 # server 1 details
-export server1_dns="fmorath@storezbhg5w3nih76usshpublicip6.westeurope.cloudapp.azure.com"
-export server1_ip="10.0.0.6"
+export server1_dns="fmorath@storeoipsjti6wookcsshpublicip6.westeurope.cloudapp.azure.com"
+export server1_ip="10.0.0.7"
 export server1_port=11211
 
 # client 1 details
-export client1_dns="fmorath@storezbhg5w3nih76usshpublicip1.westeurope.cloudapp.azure.com"
-export client1_ip="10.0.0.8"
+export client1_dns="fmorath@storeoipsjti6wookcsshpublicip1.westeurope.cloudapp.azure.com"
+export client1_ip="10.0.0.11"
 
 # client 2 details
-export client2_dns="fmorath@storezbhg5w3nih76usshpublicip2.westeurope.cloudapp.azure.com"
-export client2_ip="10.0.0.4"
+export client2_dns="fmorath@storeoipsjti6wookcsshpublicip2.westeurope.cloudapp.azure.com"
+export client2_ip="10.0.0.8"
 
 # client 3 details
-export client3_dns="fmorath@storezbhg5w3nih76usshpublicip3.westeurope.cloudapp.azure.com"
-export client3_ip="10.0.0.9"
+export client3_dns="fmorath@storeoipsjti6wookcsshpublicip3.westeurope.cloudapp.azure.com"
+export client3_ip="10.0.0.5"
 
 # mw 1 details
-export mw1_dns="fmorath@storezbhg5w3nih76usshpublicip4.westeurope.cloudapp.azure.com"
-export mw1_ip="10.0.0.11"
+export mw1_dns="fmorath@storeoipsjti6wookcsshpublicip4.westeurope.cloudapp.azure.com"
+export mw1_ip="10.0.0.9"
 export mw1_port=16379
 
 # mw 2 details
-export mw2_dns="fmorath@storezbhg5w3nih76usshpublicip5.westeurope.cloudapp.azure.com"
-export mw2_ip="10.0.0.5"
+export mw2_dns="fmorath@storeoipsjti6wookcsshpublicip5.westeurope.cloudapp.azure.com"
+export mw2_ip="10.0.0.4"
 export mw2_port=16379
 
 
@@ -69,7 +68,7 @@ function populate_memcached_servers {
 
     # note: use &> /dev/null to not write output to console 
     ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port -n allkeys \
-    --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+    --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
     --data-size=4096 --key-pattern=S:S"  
 
     echo "start populating memcached servers finished"
@@ -94,19 +93,6 @@ function kill_instances {
     echo "start killing instances finished"
 }
 
-function deallocate_vms {
-    echo "start deallocating vms ..."
-
-     # deallocate azure vms
-    az vm deallocate --resource-group ASL_project --name Client1
-    az vm deallocate --resource-group ASL_project --name Client2
-    az vm deallocate --resource-group ASL_project --name Client3
-    az vm deallocate --resource-group ASL_project --name Server1
-    az vm deallocate --resource-group ASL_project --name Middleware1
-    az vm deallocate --resource-group ASL_project --name Middleware2
-
-    echo "start deallocating vms finished"
-}
 
 
 function compile_uplaod_mw {
@@ -146,10 +132,10 @@ function run_baseline_with_two_mws {
     ssh $mw2_dns "rm *.log"
 
     # params
-    local test_time=90;
+    local test_time=80;
     local threads=1 # thread count (CT)
-    local ratio_list=(1:0 0:1)
-    local vc_list=(2 4 8 16 24) # virtual clients per thread (VC)
+    local ratio_list=(0:1 1:0)
+    local vc_list=(1 4 8 16 24 32 40) # virtual clients per thread (VC)
     local rep_list=(1 2 3)
     local worker_list=(8 16 32 64)
 
@@ -170,28 +156,28 @@ function run_baseline_with_two_mws {
 
                         # memtier connection to mw1
                         ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_1_${file_ext}_mem.json &> ${file_ext}_1.log &" &  
 
                         ssh $client2_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_1_${file_ext}_mem.json &> ${file_ext}_1.log &" & 
 
                         ssh $client3_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_1_${file_ext}_mem.json &> ${file_ext}_1.log &" & 
 
                         # memtier connection to mw2
                         ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $mw2_ip -p $mw2_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_2_${file_ext}_mem.json &> ${file_ext}_2.log &" &  
 
                         ssh $client2_dns "./memtier_benchmark-master/memtier_benchmark -s $mw2_ip -p $mw2_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_2_${file_ext}_mem.json &> ${file_ext}_2.log &" & 
 
                         ssh $client3_dns "./memtier_benchmark-master/memtier_benchmark -s $mw2_ip -p $mw2_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_2_${file_ext}_mem.json &> ${file_ext}_2.log &" & 
 
 
@@ -267,7 +253,7 @@ if [ "${1}" == "run" ]; then
    # populate memcached servers with key-value pairs
    populate_memcached_servers
 
-   # do ping test one
+   # do ping test one 
    ping
 
    # run experiment one
@@ -276,6 +262,4 @@ if [ "${1}" == "run" ]; then
    # kill instances
    kill_instances
 
-   # deallocate
-   #deallocate_vms
 fi

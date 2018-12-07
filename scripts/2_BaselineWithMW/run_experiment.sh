@@ -63,7 +63,7 @@ function populate_memcached_servers {
 
     # note: use &> /dev/null to not write output to console 
     ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $server1_ip -p $server1_port -n allkeys \
-    --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+    --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
     --data-size=4096 --key-pattern=S:S"  
 
     echo "start populating memcached servers finished"
@@ -83,19 +83,6 @@ function kill_instances {
     ssh $mw1_dns "sudo pkill -f middleware"
 
     echo "start killing instances finished"
-}
-
-function deallocate_vms {
-    echo "start deallocating vms ..."
-
-     # deallocate azure vms
-    az vm deallocate --resource-group ASL_project --name Client1
-    az vm deallocate --resource-group ASL_project --name Client2
-    az vm deallocate --resource-group ASL_project --name Client3
-    az vm deallocate --resource-group ASL_project --name Server1
-    az vm deallocate --resource-group ASL_project --name Middleware1
-    
-    echo "start deallocating vms finished"
 }
 
 
@@ -131,15 +118,15 @@ function run_baseline_with_one_mw {
     ssh $mw1_dns "rm *.log"
 
     # params
-    local test_time=70;
+    local test_time=80;
     local threads=2 # thread count (CT)
-    local ratio_list=(1:0 0:1)
-    local vc_list=(24) #(1 4 8 16 24 32) # virtual clients per thread (VC)
-    local rep_list=(1) #(1 2 3)
-    local worker_list=(8 32) #(8 16 32 64)
+    local ratio_list=(0:1 1:0)
+    local vc_list=(1 4 8 16 24 32 40) # virtual clients per thread (VC)
+    local rep_list=(1 2 3)
+    local worker_list=(8 16 32 64)
 
-    for vc in "${vc_list[@]}"; do
-        for ratio in "${ratio_list[@]}"; do
+    for ratio in "${ratio_list[@]}"; do
+        for vc in "${vc_list[@]}"; do
             for worker in "${worker_list[@]}"; do
 
                 for rep in "${rep_list[@]}"; do
@@ -154,15 +141,15 @@ function run_baseline_with_one_mw {
 
                         # memtier
                         ssh $client1_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client1_${file_ext}_mem.json &> ${file_ext}.log &" &  
 
                         ssh $client2_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client2_${file_ext}_mem.json &> ${file_ext}.log &" & 
 
                         ssh $client3_dns "./memtier_benchmark-master/memtier_benchmark -s $mw1_ip -p $mw1_port \
-                        --protocol=memcache_text --ratio=$ratio --expiry-range=9999-10000 --key-maximum=10000 --hide-histogram \
+                        --protocol=memcache_text --ratio=$ratio --expiry-range=99999-100000 --key-maximum=10000 --hide-histogram \
                         --clients=$vc --threads=$threads --test-time=$test_time --data-size=4096 --json-out-file=client3_${file_ext}_mem.json &> ${file_ext}.log &" & 
 
                         # dstat: cpu, net usage statistics           
@@ -227,9 +214,9 @@ if [ "${1}" == "run" ]; then
    start_memcached_servers
 
    # populate memcached servers with key-value pairs
-   populate_memcached_servers
+   #populate_memcached_servers
 
-   # do ping test one
+   # do ping test one 
    ping
 
    # run experiment one
@@ -238,6 +225,4 @@ if [ "${1}" == "run" ]; then
    # kill instances
    kill_instances
 
-   # deallocate
-   #deallocate_vms
 fi
