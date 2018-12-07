@@ -30,8 +30,7 @@ if __name__ == "__main__":
     os.makedirs('processed_data/two_mws/{}'.format(date), exist_ok=True)
 
     # experiment config
-    # TODO: run script can write config params into separate file from which they can be read 
-    vc_list=[2,4,8,16,24,32] 
+    vc_list=[1,4,8,16,24,32,40] 
     worker_list=[8,16,32,64]
     rep_list=[1,2,3]
     cutt_off = 10

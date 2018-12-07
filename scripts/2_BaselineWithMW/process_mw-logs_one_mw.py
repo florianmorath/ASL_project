@@ -95,7 +95,7 @@ if __name__ == "__main__":
                         write_workerPostTime_list.append(df['workerPostTime'].iloc[0]/1e6)
                     
                     if df['requestType'].iloc[0]  == 'GET':
-                        read_tp_list.append(df[' totalRequests'].iloc[0] / test_time) # divide by test-time
+                        read_tp_list.append(df[' totalRequests'].iloc[0] / (test_time-2*cut_off)) # divide by test-time
                         read_rt_list.append((df['netthreadTime'].iloc[0] + df['queueTime'].iloc[0] + df['workerPreTime'].iloc[0]+ df['memcachedRTT'].iloc[0] + df['workerPostTime'].iloc[0])/1e6)
 
                         read_queueLength_list.append(df['queueLength'].iloc[0])
