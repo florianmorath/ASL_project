@@ -1,0 +1,2 @@
+requestType,queueLength,netthreadTime,queueTime,workerPreTime,memcachedRTT,workerPostTime, totalRequests
+GET,1.591485031512605,13043.83580619748,92715.4681099002,11678.28367909664,647098.0489758403,14129.781676733193,60928

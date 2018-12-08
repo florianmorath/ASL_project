@@ -119,5 +119,4 @@ jsconfig.json
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 
-# ASL project
-logs/
+
