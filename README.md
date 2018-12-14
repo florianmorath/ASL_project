@@ -23,6 +23,6 @@ two mws -> [2018-12-07_09h02]
 6_QueueingModel
 MM1 -> based on 3_ThroughputForWrites [2018-11-09_13h02]
 MMM -> based on 3_ThroughputForWrites [2018-11-09_13h02]
-NoQ one mw -> based on 2_BaselineWithMW one mw [2018-11-04_00h57]
-NoQ two mws -> based on 2_BaselineWithMW one mw [2018-11-03_10h45]
+NoQ one mw -> based on 2_BaselineWithMW one mw [2018-12-06_23h08]
+NoQ two mws -> based on 2_BaselineWithMW one mw [2018-12-07_09h02]
 
