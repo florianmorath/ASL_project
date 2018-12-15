@@ -43,7 +43,7 @@ java -jar middleware-fmorath.jar -l localhost -p 11311 -m localhost:11211-t 64 -
 `-m`: list of addresses of memcached servers.
 
 ## Experimental data used in the report
-This is a table that states which log-files are evaluated in the report. The experiments are identified by the timestamp made when they were being run, their log-files can be found in the /logs folder and the corresponding plots can be found in the /scripts/<section>/processed_data folder.
+This is a table that states which log-files are evaluated in the report. The experiments are identified by the timestamp made when they were being run, their log-files can be found in the /logs folder and the corresponding plots can be found in the /scripts/\<section\>/processed_data folder.
 
 | Section | Experiment timestamp|
 | ------------- | ------------- |
