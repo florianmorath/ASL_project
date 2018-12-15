@@ -67,6 +67,9 @@ fabric.properties
 
 ### Java ###
 
+# ANT specific
+build/
+
 # BlueJ files
 *.ctxt
 
@@ -88,5 +91,7 @@ jsconfig.json
 ### JupyterNotebook ###
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+
+
 
 
