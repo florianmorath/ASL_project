@@ -12,12 +12,12 @@ All log-files that belong to one experiment run are stored inside the same folde
 - **ping files**: \
   *\<source\>_\<destination>_ping.log*
 
-  contains ping measurements between two VMs.
+  contain ping measurements between two VMs.
 
 - **middleware files**: \
   *\<vm_name>\_ratio_<workload_type>\_vc_<#clients>\_worker_<#workers>\_rep_<repetition_number>_sharded\_<sharded_mode>.csv*
 
-  contains request type, queue length, netthread time, queue time, worker preprocessing time, memcached RTT, worker postprocessing time and total number of requests.
+  contain request type, queue length, netthread time, queue time, worker preprocessing time, memcached RTT, worker postprocessing time and total number of requests.
 
 - **memtier automatic json files**: \
   *\<client_instance>\_ratio_<workload_type>\_vc_<#clients>\_worker\_<#workers>\_rep_<repetition_number>_sharded\_<sharded_mode>_mem.json*

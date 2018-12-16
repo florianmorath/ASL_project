@@ -6,7 +6,7 @@ There is a folder for each section of the report which contains all the scripts 
 ## Experimental setup and scripts used
 
 - **experiment run scripts**: *run_experiment.sh* \
-  Bash scripts are used to run the experiments on Azure. They are executed locally and use ssh to execute commands on the Azure VMs. Almost all experiment runs consists of the following phases: 
+  Bash scripts are used to run the experiments on Azure. They are executed locally and use ssh to execute commands on the Azure VMs. Almost all experiment runs consists of the following steps: 
   1. Compile middleware locally and upload jar file to Azure
   2. Start the memcached servers
   3. Populate the memcached servers
@@ -16,7 +16,7 @@ There is a folder for each section of the report which contains all the scripts 
   7. Deallocate VMs
 
 - **aggregation scripts**: *aggregate_<mem/mw>_data.py* \
-  Aggregation of middleware data workers as follows: For every request the Log4j library writes a new line into a csv-file which contains the request type, all timestamps and the current queue length. After the middleware is shut down, the Python mw aggregation script is executed on the cluster. It removes the reuqests in the warm-up and cool-down phase based on the timestamps, then it aggregates the data by taking the mean over the computed time intervals, the queue lengths and counting the total number of requests. The output file is a csv file.
+  Aggregation of middleware data works as follows: For every request the Log4j library writes a new line into a csv-file which contains the request type, all timestamps and the current queue length. After the middleware is shut down, the Python mw aggregation script is executed on the cluster. It removes the reuqests in the warm-up and cool-down phase based on the timestamps, then it aggregates the data by taking the mean over the computed time intervals, the queue lengths and counting the total number of requests. The output file is a csv file.
 
   Aggregation of memtier data works as follows: Every second Memtier prints a line with the current statistics about the throughput and latency of requests. The first and last 10 lines are ignored because of the warum-up and cool-down phase. The other lines are parsed and aggregated by taking the mean over the metrics. The output file is a json file.
 
@@ -27,6 +27,8 @@ There is a folder for each section of the report which contains all the scripts 
 
 - **jupyter notebooks for plotting and data analysis**: *plot_<mem/mw/dstat>-logs.ipynb* \
   Every ipython notebook starts with a cell where the date of the experiment that is analyzed can be adjusted. Pandas is used to read the processed csv files into a dataframe. Matplotlib is used to plot the data.
+
+note: more details about the histograms, 2k analysis and queueing models can be found in the README file of the corresponding folders. 
 
 ## Memtier configuration
 Memtier is executed with the following options: 

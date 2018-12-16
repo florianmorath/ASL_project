@@ -1,6 +1,6 @@
 # Advanced Systems Lab (ASL) project
 
-This project is about the evaluation of the performance of a middleware implemented in Java. Exeperiments and measurements are performed. Furthermore, the system is modeled with the help of queueing networks.
+This project is about the evaluation of the performance of a middleware implemented in Java. Experiments and measurements are performed. Furthermore, the system is modeled with the help of queueing networks.
 
 The project focuses on understanding the behavior of the system, modeling its performance, code instrumentation, bottleneck detection, performance optimizations, as well as analytical and statistical modeling. All results are summarized in a report. 
 

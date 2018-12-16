@@ -20,3 +20,13 @@ plot_mw-logs.ipynb
 plot_dstat-logs.ipynb
 plot_mem-logs.ipynb
 ```
+
+## Histograms
+
+The histogram of the latency distribution measured on the MW is computed as follows:  \
+We have a dictionary that maps bucket positions to a weight. Each bucket represents an interval of 0.1ms. Based on the latency of a request, we can associate it to a bucket and increase the corresponding weight by 1.
+For the histograms measured on the client, we can directly use the CDF computed by memtier. 
+
+To plot the histogram data, we can use the ``matplotlib.pyplot.histhist()`` method.
+
+
