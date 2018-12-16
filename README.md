@@ -5,7 +5,7 @@ This project is about the evaluation of the performance of a middleware implemen
 The project focuses on understanding the behavior of the system, modeling its performance, code instrumentation, bottleneck detection, performance optimizations, as well as analytical and statistical modeling. All results are summarized in a report. 
 
 The middleware connects load generating memtier clients with memcached servers. Memcached servers can store key-value pairs in memory. The middleware allows us to do load balancing. The whole system architecture looks as follows:
-![alt text](/report/overview.png)
+![alt text](/report/resources/overview.png)
 
 
 ## Overview 
@@ -67,5 +67,5 @@ This is a table that states which log-files are evaluated in the report. The exp
 | NoQ two mws | based on 2_BaselineWithMW two mws [2018-12-07_09h02] | 
 
 ## References
-- [Project Description](/report/project_description.pdf)
+- [Project Description](/report/resources/project_description.pdf)
 - Book: Raj Jain, The Art of Computer Systems Performance Analysis: Techniques for Experimental Design, Measurement, Simulation, and Modeling, April 1991, ISBN: 978-0471503361.
