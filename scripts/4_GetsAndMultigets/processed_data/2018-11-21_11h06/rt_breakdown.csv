@@ -1,2 +1,0 @@
-client,worker,ratio,sharded,netthreadTime,queueTime,workerPreTime,memcachedRTT,workerPostTime
-12,64,1:1,true,0.013099796184831074,0.10531730700291164,0.014663883409550302,1.3836584747742275,0.015350920394618557
