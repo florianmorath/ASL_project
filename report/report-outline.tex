@@ -1,0 +1,84 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fullpage}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{minted}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{tabulary}
+\usepackage{tabularx}
+\usepackage{pdfpages}
+\usepackage{subcaption}
+\usepackage{adjustbox}
+\usepackage{amsfonts}
+\usepackage{listings}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\usepackage{todonotes}                %% notes from the authors
+
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\fancypagestyle{firstpagefooter} {
+	\lfoot{}
+	\cfoot{}
+	\rfoot{\thepage}
+	
+}
+
+\lfoot{Name: Florian Morath Legi: 14-931-968}
+\rfoot{\thepage}
+
+\begin{document}
+
+\title{Advanced Systems Lab Report\\ \normalsize{Autumn Semester 2018}}
+\author{Name: Florian Morath\\Legi: 14-931-968}
+\date{
+	\vspace{4cm}
+	\textbf{Grading} \\
+	\vspace{0.5cm}
+	\begin{tabular}{|c|c|}
+		\hline  \textbf{Section} & \textbf{Points} \\
+		\hline  1                &                 \\ 
+		\hline  2                &                 \\ 
+		\hline  3                &                 \\ 
+		\hline  4                &                 \\ 
+		\hline  5                &                 \\ 
+		\hline  6                &                 \\ 
+		\hline  7                &                 \\ 
+		\hline \hline Total      &                 \\
+		\hline 
+	\end{tabular} 
+}
+\clearpage
+
+\maketitle
+\thispagestyle{firstpagefooter}
+\newpage
+
+\section{System Overview (75 pts)}
+\input{SystemOverview}
+
+\section{Baseline without Middleware (75 pts)}
+\input{BaselineWithoutMW}
+
+\section{Baseline with Middleware (90 pts)} \label{section:BaselineWithMW}
+\input{BaselineWithMW}
+
+\section{Throughput for Writes (90 pts)} \label{section:TpForWrites}
+\input{ThroughputForWrites}
+
+\section{Gets and Multi-gets (90 pts)}
+\input{GetsAndMultigets}
+
+\section{2K Analysis (90 pts)}
+\input{2kAnalysis}
+
+\section{Queuing Model (90 pts)}
+\input{QueuingModel}
+
+\end{document}
