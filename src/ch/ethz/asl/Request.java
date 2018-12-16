@@ -74,11 +74,6 @@ public class Request {
      */
     private void parseRequest() {
 
-        // log received message (debugging purpose -> remove for efficiency)
-        // String requestMsg = new String(Arrays.copyOfRange(buffer.array(), 0, buffer.position()),
-        //        Charset.forName("UTF-8"));
-        // logger.info(requestMsg);
-
         if (!Request.endOfLineExists(buffer)) {
             // incomplete message
             type = Type.INVALID;
