@@ -16,6 +16,7 @@ Figure \ref{overview} gives a simplified overview of the system. First, a client
 \texttt{RunMW.java} is the entry point of the system. It parses the command line arguments, such as the addresses of the memcached servers, the address of the net-thread and the number of worker threads in the system. It starts the Middleware by creating an instance of the \textit{Middleware} class, which then starts the worker threads and the net-thread. 
 
 \subsection{Net-Thread}
+The \texttt{NetThread} class extends the \textit{Thread}\footnote{\url{https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html}} class. 
 The net-thread basically does two things: It establishes client connections and puts received requests into a queue. \\
 
 % client connections
@@ -49,10 +50,11 @@ The constructor of the \textit{Request} class calls a method \textit{parseReques
 
 \subsection{Worker Threads}
 % role of worker threads, what do they do
+The \texttt{WorkerThread} class extends the \textit{Thread}\footnote{\url{https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html}} class. 
 The role of the worker threads is basically to establish connections to the memcached servers and to process the requests that the net-thread added to the internal request queue. \\
 
 % First: memcached server connections (blocking)
-The first thing a worker thread does is to establish a permanent connection to each memcached server. The addresses of those servers are passed as an argument to the middleware at start-up. A worker thread opens a socket channel for each server and connects it to the server. The socket channels are stored in an array list, in order to be able to access them later on. The channels are configured to be blocking to keep the code simple and to not waste CPU usage while polling until a whole response has been read from a server. However, it also has disadvantages like failure during blocking calls leading to unresponsiveness and scalability issues if we have a lot of open connections, which in our case we don't have because we can have at maximum three servers. \\
+The first thing a worker thread does is to establish a permanent connection to each memcached server. The addresses of those servers are passed as an argument to the middleware at start-up. A worker thread opens a socket channel for each server and connects it to the server. The socket channels are stored in an array list, in order to be able to access them later on. The channels are configured to be blocking to keep the code simple and to not waste CPU resources while polling until a whole response has been read from a server. However, it also has disadvantages like failure during blocking calls leading to unresponsiveness and scalability issues if we have a lot of open connections, which in our case we don't have because we can have at maximum three servers. \\
 
 % write about buffers (efficient allocation and reusability of responseBuffer)
 For the buffer allocations, once again, we want to use as few allocations as possible and reuse them. This is achieved by having each worker thread allocating one buffer and referencing it with a field. This buffer is used to write the response from the servers into. If a request is done being processed, the buffer can be cleared in order to be reused again. Note that because of the sharded mode we actually allocate another buffer to make the reassembly of the responses easier, which will be explained later in more detail. But still the number of buffers doesn't grow with the number of requests and stays proportional to the number of worker threads.\\
@@ -63,7 +65,7 @@ If the type of the request is \mintinline{java}{SET} then it will call \textit{h
 % two subsubsections: different kind of requests (set and get request): explain each execution path in detail
 \subsubsection{Handle a Set Request}
 For a Set request, the worker thread sends it to each server and then waits for a response of all of them. If one or multiple servers respond with an error message, one of them is forwarded to the client. If no error occurred, one of the success messages is forwarded to the client. \\
-This is implemented as follows: The buffer contained in the \textit{Request} object is sent sequentially to each server by iterating over the socket channels. After that, we go over the socket channels again and for each socket channel we write the response into our buffer and check the content in order to find out if the Set request was successfully executed on the server. If it was not, the error message is added to an array list. Note that we always read from a channel until we get an end of line string, which denotes that a full response has been read. And also note that the buffer is cleared before writing into it, such that we can reuse it and not have to allocate a new one for each response. After having processed all responses, whenever there occurred an error, we just forward the first error message to the client and otherwise the last success message is forwarded to the client because it is still contained in the buffer. 
+This is implemented as follows: The buffer contained in the \textit{Request} object is sent sequentially to each server by iterating over the socket channels. After that, we go over the socket channels again and for each socket channel we write the response into our buffer and check the content in order to find out if the Set request was successfully executed on the server. If it was not, the error message is added to an array list. Note that we always read from a channel until we get an end of line string, which denotes that a full response has been read. And also note that the buffer is cleared before writing into it, such that we can reuse it and not have to allocate a new one for each response. After having processed all responses, if there occurred an error, we just forward the first error message to the client and otherwise the last success message is forwarded to the client because it is still contained in the buffer. 
 
 \subsubsection{Handle a Get Request}
 For the \textbf{non-sharded mode}, we just forward the Get request (includes Multiget requests) to one server, which is chosen based on a round-robin scheme, and the response from the server is forwarded to the client. We don't have to inspect the response because independently of success or error, it can always be forwarded to the client. \\
@@ -95,7 +97,7 @@ What is left to explain is how we handle the case with fewer keys than servers. 
 To denote the last server used in the round-robin scheme, we have chosen to use a private field \textit{'lastServerIndex'} in each worker thread instead of a global variable because it avoids having to synchronize access on it. Having all worker threads access the same variable for every Get request concurrently would lead to blocking behavior, which degrades the performance. 
 
 % empirical evaluation -> show plot
-We did an empirical evaluation to show that on average all memcached servers are subject to the same load. The experiment was run on the cluster with 1 client, 4 worker threads and 3 memcached servers with Get requests only. Each worker thread prints how many times it hit each of the servers:
+We did an empirical evaluation to show that on average all memcached servers are subject to the same load. The experiment was run on the cluster with 1 client, 4 worker threads and 3 memcached servers with Get requests only. Each worker thread printed how many times it hit each of the servers:
 \begin{lstlisting}[basicstyle=\tiny]                
 [Thread-2] ch.ethz.asl.WorkerThread: [0=16208, 1=16208, 2=16208] 
 [Thread-4] ch.ethz.asl.WorkerThread: [0=15208, 1=15209, 2=15208] 

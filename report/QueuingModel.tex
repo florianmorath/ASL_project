@@ -53,8 +53,8 @@ Total response times are not accurately predicted because the service time is ve
 		\begin{tabulary}{\linewidth}{ C | C | C | C | c | C | C | C | C | }
 			\cline{2-9}	&	\multicolumn{2}{| c |}{\textbf{8 workers}}	&	\multicolumn{2}{| c |}{\textbf{16 workers}}	&	\multicolumn{2}{| c |}{\textbf{32 workers}}	&	\multicolumn{2}{| c |}{\textbf{64 workers}}	\\
 			\cline{2-9} &	predicted	&	measured	&	predicted	&	measured	&	predicted	&	measured	&	predicted	&	measured	\\
-			\hline	\multicolumn{1}{| c |}{$\mu$ [req/s]}	    &-      &9249.94&-	&10891.57	&-	&13258.34	&-	&15670.26	\\
-			\hline	\multicolumn{1}{| c |}{$\lambda$ [req/s]}	&-      &9025.93&-	&10716.8	&-	&13023.1	&-	&14519.22	\\
+			\hline	\multicolumn{1}{| c |}{$\mu$ [req/s]}	    &-      &9'249.94&-	&10'891.57	&-	&13'258.34	&-	&15'670.26	\\
+			\hline	\multicolumn{1}{| c |}{$\lambda$ [req/s]}	&-      &9'025.93&-	&10'716.8	&-	&13'023.1	&-	&14'519.22	\\
 			\hline	\multicolumn{1}{| c |}{$\rho$}	            &0.9758	&-	    &0.984	&-	&0.9823	&-	&0.9265	&-	\\
 			\hline	\multicolumn{1}{| c |}{$\mathbb{E}[n_q]$}	&39.32	&59.7	&60.33	&48.39	&54.38	&27.2	&11.69	&6.94	\\
 			\hline	\multicolumn{1}{| c |}{$\mathbb{E}[n_s]$}	&0.98	&16	&0.98	&32	&0.98	&64	&0.93	&128	\\
@@ -90,7 +90,7 @@ In this subsection we build an M/M/m model based on Section \ref{section:TpForWr
 			\cline{2-9}	&	\multicolumn{2}{| c |}{\textbf{8 workers}}	&	\multicolumn{2}{| c |}{\textbf{16 workers}}	&	\multicolumn{2}{| c |}{\textbf{32 workers}}	&	\multicolumn{2}{| c |}{\textbf{64 workers}}	\\
 			\cline{2-9} &	predicted	&	measured	&	predicted	&	measured	&	predicted	&	measured	&	predicted	&	measured	\\
 			\hline	\multicolumn{1}{| c |}{$\mu$ [req/s]}	    &-      &578.12&-	&340.36	&-	&207.16	&-	&122.42	\\
-			\hline	\multicolumn{1}{| c |}{$\lambda$ [req/s]}	&-      &9025.93&-	&10716.8	&-	&13023.1	&-	&14519.22	\\
+			\hline	\multicolumn{1}{| c |}{$\lambda$ [req/s]}	&-      &9'025.93&-	&10'716.8	&-	&13'023.1	&-	&14'519.22	\\
 			\hline	\multicolumn{1}{| c |}{$\rho$}	            &0.9758	&-	    &0.984	&-	&0.9823	&-	&0.9265	&-	\\
 			\hline	\multicolumn{1}{| c |}{$\mathbb{E}[n_q]$}	&35.85	&59.7	&54.87	&48.39	&46.35	&27.2	&3.73	&6.94	\\
 			\hline	\multicolumn{1}{| c |}{$\mathbb{E}[n_s]$}	&15.61	&16	&31.49	&32	&62.86	&64	&118.6	&128	\\
@@ -140,7 +140,7 @@ Since we use load-dependent service centers (for the workers), we cannot use the
 \begin{figure}[!ht]
     \centering
 	\includegraphics[scale=0.6]{figures/6_NoQ/NoQ_figure_one_mw.pdf}
-	\caption{Network of queues model for one middleware case.}
+	\caption{Network of queues model for one middleware.}
 	\label{NoQ_one_mw}
 \end{figure}
 
@@ -154,10 +154,10 @@ The \textbf{input parameters} of the model are: \\
 
 %% Present and explain the predictions
 Predicted metrics (from the output of Octave) and measured metrics for 8 workers and 48 client-load are shown in Table \ref{table:noq_1midd}. 
-The predictions for the system throughput and the response time of the middleware are quite accurate. The predictions for the length of the internal request queue are also reasonably good. 
+The predictions for the system throughput and the response time of the middleware are quite accurate. The predictions for the length of the internal request queue are slightly overestimated. This is because $Q_{workers}$ actually not only includes the jobs waiting in the queue but also those receiving service at the workers. Note that there can be at most 8 jobs receiving service at the workers at the same time since we have 8 workers. \\
 In contrast to the previous models, a network of queues allows us to do a bottleneck analysis. For the read-only workload, the bottleneck in our system of Section \ref{sec:baselineWithMWOne} was the memcached server respectively its outbound network bandwidth. This is correctly predicted by the model since $U_{workers} > U_{netthread}$ and based on our model $U_{workers}$ includes the memcached server. For the write-only workload, the bottleneck in our system (for 8 worker threads) were the worker threads, which is also correctly predicted as $U_{workers} > U_{netthread}$. The bottlenecks are at $100\%$ utilization which conforms to our system which is also saturated at 48 client-load with 8 worker threads for both read-only and write-only workloads.
 
-If we compare read-only and write-only net-thread utilization, we see that the net-thread utilization for write-only is 5x higher than for read-only. This is because the SET requests are bigger and thus the net-thread needs to read more data in contrast to the GET requests which just contain a key. 
+If we compare read-only and write-only net-thread utilization, we see that the net-thread utilization for write-only is 5x higher than for read-only. This is because the Set requests are bigger and thus the net-thread needs to read more data in contrast to the Get requests which just contain a key. 
 
 Another interesting point to mention is that if we do the write-only workload analysis for 64 workers, we have $58.11\%$ utilization for the net-thread and $26.65\%$ for the workers. Thus the model predicts that the bottleneck is on the net-thread and not on the worker threads anymore which exactly corresponds to the bottleneck analysis done in Section \ref{sec:baselineWithMWOne} as for higher number of workers the worker bottleneck is removed.
 
@@ -166,7 +166,7 @@ Another interesting point to mention is that if we do the write-only workload an
 		\begin{tabulary}{\linewidth}{ C | C | C | C | C | }
 			\cline{2-5}	&	\multicolumn{2}{| c |}{\textbf{read-only}}	&	\multicolumn{2}{| c |}{\textbf{write-only}}	\\
 			\cline{2-5} &	predicted	&	measured	&	predicted	&	measured	\\
-			\hline	\multicolumn{1}{| c |}{throughput $X$ [req/s]}		&	2964.4	&	2938.08	&	7255.6	&	7112.42	\\
+			\hline	\multicolumn{1}{| c |}{throughput $X$ [req/s]}		&	2'964.4	&	2'938.08	&	7'255.6	&	7'112.42	\\
 			\hline	\multicolumn{1}{| c |}{response time $R_{mw}$ [ms]}		&	15.26	&	15.4	&	5.59	&	5.74	\\
 			\hline	\multicolumn{1}{| c |}{queue length $Q_{workers}$}				&	45.16	&	34.31	&	40.17	&	32.51	\\
 			\hline	\multicolumn{1}{| c |}{utilization $U_{netthread}$ [\%]}	&	6.28	&	-		&	30.02	&	-	\\
@@ -186,13 +186,13 @@ Essentially everything is the same as in the one middleware case, but now the mi
 \begin{figure}[!ht]
     \centering
 	\includegraphics[scale=0.6]{figures/6_NoQ/NoQ_figure_two_mws.pdf}
-	\caption{Network of queues model for two middlewares case.}
+	\caption{Network of queues model for two middlewares.}
 	\label{NoQ_two_mws}
 \end{figure}
 
 %% Present and explain the predictions
 Predicted metrics (from the output of Octave) and measured metrics for 8 workers and 48 client-load are shown in Table \ref{table:noq_2midd}. 
-Again the model predicts the throughput and response time of the middleware quite accurately. The queue length is predicted around 10 elements too high for both type of workloads. \\
+Again the model predicts the throughput and response time of the middlewares quite accurately. The queue length is slightly overestimated for the same reason that was given in the one middleware case. \\
 For the read-only workload the predicted bottleneck are the worker threads because $U_{workers} > U_{netthread}$. This conforms to our bottleneck analysis in Section \ref{sec:baselineWithMWTwo} where the memcached server is the bottleneck, because again the servers are part of the M/M/m component representing the worker threads. 
 For the write-only workload, the predicted bottleneck are also the worker threads for the same reason, which conforms to our bottleneck analysis in Section \ref{sec:baselineWithMWTwo} where the worker threads are the bottleneck. The bottlenecks are almost at $100\%$ utilization, which conforms to our system which is also saturated at 48 client-load with 8 worker threads for both read-only and write-only workloads.\\
 
@@ -203,7 +203,7 @@ This is because the two net-threads share the same load and we have less congest
 		\begin{tabulary}{\linewidth}{ C | C | C | C | C | }
 			\cline{2-5}	&	\multicolumn{2}{| c |}{\textbf{read-only}}	&	\multicolumn{2}{| c |}{\textbf{write-only}}	\\
 			\cline{2-5} &	predicted	&	measured	&	predicted	&	measured	\\
-			\hline	\multicolumn{1}{| c |}{throughput $X$ [req/s]}		&	2869.2	&	2944.13	&	9184.1	&	9406.65	\\
+			\hline	\multicolumn{1}{| c |}{throughput $X$ [req/s]}		&	2'869.2	&	2'944.13	&	9'184.1	&	9'406.65	\\
 			\hline	\multicolumn{1}{| c |}{response time $R_{mw}$ [ms]}		&	15.66	&	15.32	&	4.27	&	4.21	\\
 			\hline	\multicolumn{1}{| c |}{queue length $Q_{workers}$}				&	22.44	&	11.63	&	19.47	&	10.67	\\
 			\hline	\multicolumn{1}{| c |}{utilization $U_{netthread}$ [\%]}	&	2.06	&	-		&	13.98	&	-	\\

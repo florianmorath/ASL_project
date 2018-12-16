@@ -64,7 +64,7 @@ If we look at the throughput in Figure \ref{one_server_tp}, we can see that for 
 % read throughput: where does memcached saturate, why (what’s the bottleneck)? 
 % network bandwidth, figure out network bandwidth with iperf and then actually used bandwidth with dstat.
 % (server upload bandwidth at 12Mbps which is max with  iperf) 
-The throughput for read-only workloads stays at the same level during the whole experiment. This indicates that the network bandwidth might be a bottleneck here. In order to confirm this, we first we need to check the maximum outbound network bandwidths for clients and servers. This is done with \textit{iperf}, the results can be seen in the following table: 
+The throughput for read-only workloads stays at the same level during the whole experiment. This indicates that the network bandwidth might be a bottleneck here. In order to confirm this, we first need to check the maximum outbound network bandwidth for client and server VMs. This is done with \textit{iperf} and the results can be seen in the following table: 
 
 \begin{center}
 	\begin{tabular}{|l|c|}
