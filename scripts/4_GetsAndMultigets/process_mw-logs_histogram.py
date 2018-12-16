@@ -4,7 +4,7 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- mw_histogram.csv: rt histogram for sharded and nonsharded multigets (ratio = 1:6 ) 
+- mw_histogram.csv: rt histogram for sharded and nonsharded multigets (ratio = 1:6) 
 """
 
 import os

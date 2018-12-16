@@ -4,9 +4,9 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- full_write_mw_tp.csv: thorughput (for write loads)
-- full_write_mw_rt.csv: response-time (for write loads)
-- full_write_mw_rt_breakdown.csv: breakdown of different response-times in MW (for write loads)
+- full_write_mw_tp.csv: throughput (for write loads)
+- full_write_mw_rt.csv: response time (for write loads)
+- full_write_mw_rt_breakdown.csv: breakdown of different response times in MW (for write loads)
 - full_write_mw_queuelength.csv: queue-length (for write loads)
 """
 

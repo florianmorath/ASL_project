@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """ 
-Aggregate memtier output and write to json file
+Aggregate memtier output and write to json file.
 
 """
 
@@ -80,6 +80,3 @@ if __name__ == "__main__":
         }
 
     json.dump(stat_dict, aggregated_file)
-
-
-    

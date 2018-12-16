@@ -5,7 +5,7 @@ Process log files to csv files such that extracted values can easily be plotted.
 
 output:
 - mem_tp.csv: throughput for sharded and nonsharded loads
-- mem_rt.csv: response-time for sharded and nonsharded loads
+- mem_rt.csv: response time for sharded and nonsharded loads
 - mem_percentiles.csv: percentiles for sharded and nonsharded loads
 
 """

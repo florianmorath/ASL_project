@@ -4,8 +4,8 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- full_write_mem_tp.csv: thorughput for write loads
-- full_write_mem_rt.csv: response-time for write loads
+- full_write_mem_tp.csv: throughput for write loads
+- full_write_mem_rt.csv: response time for write loads
 
 """
 

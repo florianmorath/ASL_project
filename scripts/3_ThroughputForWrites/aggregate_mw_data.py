@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """ 
-Aggregate reuqests to a single line of data
+Aggregate requests to a single line of data.
 
 """
 

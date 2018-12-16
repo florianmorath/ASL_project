@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """ 
-Process csv files into one csv file s.t can easily be imported in a spreadsheet
+Process csv files into one csv file s.t can easily be imported in a spreadsheet.
 
 output:
 - 2kanalysis_data.csv

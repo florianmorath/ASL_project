@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """ 
-Aggregate memtier output and write to json file
+Aggregate memtier output and write to json file.
 
 """
 

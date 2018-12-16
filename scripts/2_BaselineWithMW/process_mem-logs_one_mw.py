@@ -4,8 +4,8 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- one_mw_mem_tp.csv: thorughput for read and write loads
-- one_mw_mem_rt.csv: response-time for read and write loads
+- one_mw_mem_tp.csv: throughput for read and write loads
+- one_mw_mem_rt.csv: response time for read and write loads
 
 """
 
@@ -77,6 +77,6 @@ if __name__ == "__main__":
                 write_rt_list.append(np.mean(temp_write_rt_list))
                 read_rt_list.append(np.mean(temp_read_rt_list))
 
-            
+
             tp_file.write('{},{},{},{},{},{}\n'.format(2*3*vc, worker, np.mean(write_tp_list), np.std(write_tp_list), np.mean(read_tp_list), np.std(read_tp_list)))
             rt_file.write('{},{},{},{},{},{}\n'.format(2*3*vc, worker, np.mean(write_rt_list), np.std(write_rt_list), np.mean(read_rt_list), np.std(read_rt_list)))

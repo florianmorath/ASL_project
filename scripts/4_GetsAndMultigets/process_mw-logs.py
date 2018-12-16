@@ -4,7 +4,7 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- rt_breakdown.csv: breakdown of different response-times in MW (for sharded and nonsharded multigets)
+- rt_breakdown.csv: breakdown of different response times in MW (for sharded and nonsharded multigets)
 - queuelength.csv: queue-length (for sharded and nonsharded multigets)
 """
 

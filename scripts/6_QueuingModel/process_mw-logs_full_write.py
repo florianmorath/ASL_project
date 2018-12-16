@@ -4,8 +4,8 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- full_write_mw_tp_max.csv: max thorughput (for write loads)
-- full_write_mw_rt_breakdown_min.csv: breakdown of different response-times in MW (for write loads)
+- full_write_mw_tp_max.csv: max throughput (for write loads)
+- full_write_mw_rt_breakdown_min.csv: breakdown of different response times in MW (for write loads)
 """
 
 import os

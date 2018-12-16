@@ -4,8 +4,8 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- mw_2_s_1_mem_tp.csv: thorughput for read and write loads
-- mw_2_s_1_mem_rt.csv: response-time for read and write loads
+- mw_2_s_1_mem_tp.csv: throughput for read and write loads
+- mw_2_s_1_mem_rt.csv: response time for read and write loads
 
 """
 
@@ -30,7 +30,6 @@ if __name__ == "__main__":
     os.makedirs('processed_data/{}'.format(date), exist_ok=True)
 
     # experiment config
-    # TODO: run script can write config params into separate file from which they can be read 
     ratio_list=['0:1','1:0']
     vc_list=[32] 
     worker_list=[8,32]

@@ -4,9 +4,9 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- two_mws_tp.csv: thorughput (for read and write loads)
-- two_mws_rt.csv: response-time (for read and write loads)
-- two_mws_rt_breakdown.csv: breakdown of different response-times in MW (for read and write loads)
+- two_mws_tp.csv: throughput (for read and write loads)
+- two_mws_rt.csv: response time (for read and write loads)
+- two_mws_rt_breakdown.csv: breakdown of different response times in MW (for read and write loads)
 - two_mws_queuelength.csv: queue-length (for read and write loads)
 """
 
@@ -131,7 +131,6 @@ if __name__ == "__main__":
 
                         temp_read_workerPostTime_list.append(df['workerPostTime'].iloc[0]/1e6)
 
-                # TODO: for tp, sum together content -> replace list. for rt take mean -> new list
                 write_tp_list.append(np.sum(temp_write_tp_list))
                 read_tp_list.append(np.sum(temp_read_tp_list))
                 write_rt_list.append(np.mean(temp_write_rt_list))

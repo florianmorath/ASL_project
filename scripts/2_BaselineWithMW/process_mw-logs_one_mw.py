@@ -4,9 +4,9 @@
 Process log files to csv files such that extracted values can easily be plotted.
 
 output:
-- one_mw_tp.csv: thorughput (for read and write loads)
-- one_mw_rt.csv: response-time (for read and write loads)
-- one_mw_rt_breakdown.csv: breakdown of different response-times in MW (for read and write loads)
+- one_mw_tp.csv: throughput (for read and write loads)
+- one_mw_rt.csv: response time (for read and write loads)
+- one_mw_rt_breakdown.csv: breakdown of different response times in MW (for read and write loads)
 - one_mw_queuelength.csv: queue-length (for read and write loads)
 """
 
