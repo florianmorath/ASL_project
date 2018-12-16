@@ -23,7 +23,8 @@ log4j2.xml      -- Log4j configuration file
 /scripts        -- scripts to run experiments, aggregate, process and plot collected data
 
 # Report
-/report         -- project report written in LaTex
+/report         -- project report LaTex files 
+report.pdf      -- project report
 
 ```
 
