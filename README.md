@@ -66,3 +66,6 @@ This is a table that states which log-files are evaluated in the report. The exp
 | NoQ one mw | based on 2_BaselineWithMW one mw [2018-12-06_23h08] |    
 | NoQ two mws | based on 2_BaselineWithMW two mws [2018-12-07_09h02] | 
 
+## References
+- [Project Description](/report/project_description.pdf)
+- Book: Raj Jain, The Art of Computer Systems Performance Analysis: Techniques for Experimental Design, Measurement, Simulation, and Modeling, April 1991, ISBN: 978-0471503361.
